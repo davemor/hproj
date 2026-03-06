@@ -1,0 +1,20 @@
+[project]
+name = "hproj"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "David Morrison", email = "dm236@st-andrews.ac.uk" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "cuml-cu12[dask]>=26.2.0",
+    "dotenv>=0.9.9",
+]
+
+[project.scripts]
+hproj = "hproj.__main__:main"
+
+[build-system]
+requires = ["uv_build>=0.9.26,<0.10.0"]
+build-backend = "uv_build"
