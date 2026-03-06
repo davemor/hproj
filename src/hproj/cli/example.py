@@ -8,7 +8,7 @@ from cuml.dask.datasets import make_blobs
 from cuml.metrics import adjusted_rand_score
 
 @click.command()
-def pipeline():
+def example():
     print('Running the pipeline')
 
     # set up a local CUDA cluster and connect a Dask client to it

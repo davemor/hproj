@@ -73,8 +73,8 @@ DATA_ROOT='<add path to the data root here>/'
         ...
 
 runs/{run_id}/
-    log.txt
-    config.yaml  # paird seed,
+    {experiment}-{timestamp}-{config-hash}.log
+    config.yaml  # paird seed and config for experiment - copied i
     manifest.json  # run id, git commit hash, timings
     datasets/{dataset}/
         folds/folds_k{k}_seed{seed}.npz
@@ -103,3 +103,6 @@ runs/{run_id}/
                         # params config log and scores over all folds
                         {dim}.json
                 best_parames.json
+
+# Run IDs
+The format of the run ids is {experiment}-{timestamp}-{config-hash}.log. Logs are text files.

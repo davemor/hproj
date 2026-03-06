@@ -2,7 +2,7 @@ import click
 
 from dotenv import load_dotenv
 
-from hproj.cli import pipeline 
+from hproj.cli import example 
 
 load_dotenv()
 
@@ -11,7 +11,7 @@ def cli():
     pass
 
 
-cli.add_command(pipeline)
+cli.add_command(example)
 
 
 def main():
