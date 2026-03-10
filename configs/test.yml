@@ -1,0 +1,38 @@
+datasets:
+  - kather100k
+
+encoders:
+  - uni2
+
+# paired seeds
+seeds: 
+  calibration: [0, 1]
+  curve: [0, 1, 2]
+  evaluation: [0, 1, 2, 3, 4]
+
+# set the number of folds for cross-validation
+num_folds: 5
+
+calibration:
+  dimensions: [1,2]  # note that D is always added
+  subsample: 10_000  # specify the total size of the dataset
+  measurements:
+    - name: mean-knn-score
+      params:
+        ks: [5,15,30]
+  projectors:
+    - name: pca
+      params:
+        {}
+    - name: grp
+      params:
+        {}
+    - name: umap
+      params:
+        n_neighbors: [2, 5]
+        min_dist: [0.0, 0.1, 0.99]
+        metric: [cosine]  # these are image embeddings
+  # classifiers:
+  #   - name: logistic_regression
+  #     params:
+  #       C: [0.01, 0.1, 1, 10, 100]

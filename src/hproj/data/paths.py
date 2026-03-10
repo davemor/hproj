@@ -18,18 +18,19 @@ class Paths:
             embeddings_root=Path(os.getenv("EMBEDDINGS_ROOT")),
             data_root=Path(os.getenv("DATA_ROOT")),
         )
-    
-    # def run(self, id: str) -> 'RunPath':
-    #     return RunPath(
-    #         self.data_root / 'runs' / id,
-    #     )
-    
-    def embedding(self, dataset: str, encoder: str) -> 'EmbeddingsPath':
+
+    def run(self, id: str) -> "RunPath":
+        return RunPath(
+            self.data_root / "runs" / id,
+        )
+
+    def embedding(self, dataset: str, encoder: str) -> "EmbeddingsPath":
         folder = f"cache-{dataset}-{encoder}"
         return EmbeddingsPath(
             self.embeddings_root / folder,
         )
-    
+
+
 # ============================================================================
 # Embedding Paths
 #
@@ -37,6 +38,7 @@ class Paths:
 #   paths = Path.from_env()
 #   k100k_train = paths.embedding("kather100k", "uni").split("train").load()
 # ============================================================================
+
 
 @dataclass
 class EmbeddingsPath:
@@ -47,9 +49,10 @@ class EmbeddingsPath:
 
     def split(self, split: str) -> "EmbeddingsSplitPath":
         return EmbeddingsSplitPath(self.root / split)
-    
+
     def load_splits(self) -> tuple["FeatureSpace", "FeatureSpace"]:
         from hproj.data.feature_space import get_train_test
+
         return get_train_test(self)
 
 
@@ -73,7 +76,7 @@ class EmbeddingsSplitPath:
 
     def paths_json(self, shard: int | str) -> Path:
         return self.root / f"paths_{shard}.json"
-    
+
     def glob_embs(self) -> list[Path]:
         pattern = "emb_[0-9][0-9][0-9][0-9].pt"
         return list(self.root.glob(pattern))
@@ -81,14 +84,15 @@ class EmbeddingsSplitPath:
     def glob_labels(self) -> list[Path]:
         pattern = "labels_[0-9][0-9][0-9][0-9].pt"
         return list(self.root.glob(pattern))
-    
+
     def glob_paths_json(self) -> list[Path]:
         pattern = "paths_[0-9][0-9][0-9][0-9].json"
         return list(self.root.glob(pattern))
-    
+
     # non path related helper method
     def load(self) -> "FeatureSpace":
         from hproj.data.feature_space import load_embeddings
+
         return load_embeddings(self)
 
 
@@ -96,7 +100,13 @@ class EmbeddingsSplitPath:
 # Run Paths - for storing results of a run
 # ============================================================================
 
+
 @dataclass
 class RunPath:
     root: Path
 
+    def projector_calibration(self, projector: str):
+        return self.root / 'calibration' / projector.csv
+    
+    def classifier_calibration(self, classifier: str):
+        return self.root / 'calibration' / classifier.csv

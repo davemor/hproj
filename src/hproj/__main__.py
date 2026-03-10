@@ -2,9 +2,10 @@ import click
 
 from dotenv import load_dotenv
 
-from hproj.cli import example 
+from hproj.cli import example
 
 load_dotenv()
+
 
 @click.group(help="CLI tool for projecting and characterising histology embeddings.")
 def cli():

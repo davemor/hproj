@@ -1,0 +1,45 @@
+datasets:
+  - kather100k
+  - spider-colorectal
+  - spider-breast
+  - spider-skin
+  - spider-thorax
+
+encoders:
+  - uni
+  - uni2
+  - hibou
+  - dinov2
+
+# paired seeds
+seeds: 
+  calibration: [0, 1]
+  curve: [0, 1, 2]
+  evaluation: [0, 1, 2, 3, 4]
+
+# set the number of folds for cross-validation
+num_folds: 5
+
+calibration:
+  dimensions: [1,2,4,8,16,32,128,256,512,1024]  # note that D is always added
+  measurements:
+    - name: mean-knn-score
+      params:
+        ks: [5,15,30]
+  projectors:
+    - name: pca
+      params:
+        {}
+    - name: grp
+      params:
+        {}
+    - name: umap
+      params:
+        # https://arxiv.org/html/2407.17876v1
+        n_neighbors: [2, 5, 10, 20, 50, 100, 200]
+        min_dist: [0.0, 0.1, 0.25, 0.5, 0.8, 0.99]
+        metric: [cosine]  # these are image embeddings
+  # classifiers:
+  #   - name: logistic_regression
+  #     params:
+  #       C: [0.01, 0.1, 1, 10, 100]

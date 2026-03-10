@@ -7,9 +7,10 @@ from cuml.dask.cluster import KMeans
 from cuml.dask.datasets import make_blobs
 from cuml.metrics import adjusted_rand_score
 
+
 @click.command()
 def example():
-    print('Running the pipeline')
+    print("Running the pipeline")
 
     # set up a local CUDA cluster and connect a Dask client to it
     cluster = LocalCUDACluster()
@@ -19,7 +20,7 @@ def example():
     print(f"Cluster dashboard available at: {client.dashboard_link}")
 
     # Get number of workers for data partitioning
-    n_workers = len(client.scheduler_info()['workers'])
+    n_workers = len(client.scheduler_info()["workers"])
 
     # Generate distributed synthetic data
     X, y = make_blobs(
@@ -28,7 +29,7 @@ def example():
         centers=5,
         cluster_std=0.5,
         random_state=42,
-        n_parts=n_workers * 2  # Multiple partitions per worker
+        n_parts=n_workers * 2,  # Multiple partitions per worker
     )
 
     print(f"Generated data with {len(X.to_delayed())} partitions")
