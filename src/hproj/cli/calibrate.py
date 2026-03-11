@@ -1,4 +1,5 @@
 from itertools import product
+import json
 from pathlib import Path
 from statistics import mean
 from time import perf_counter
@@ -8,6 +9,9 @@ import numpy as np
 from dask.distributed import Client
 from dask_cuda import LocalCUDACluster
 import pandas as pd
+
+from dask.distributed import as_completed
+from tqdm.auto import tqdm
 
 from hproj.data.feature_space import FeatureSpace
 from hproj.data.folds import Fold, generate_stratified_folds
@@ -55,6 +59,7 @@ def score_projector_config_task(
     n_components,
     seeds,
     folds,
+    params_idx
 ):
     def score(seed):
         projector = ProjectorFactory.create(
@@ -92,6 +97,7 @@ def score_projector_config_task(
         "dataset": dataset_name,
         "n_components": n_components,
         "num_seeds": len(seeds),
+        "params_idx": params_idx
     }
     return meta_data | proj_hyperparams | results
 
@@ -112,26 +118,18 @@ def make_dask_client():
     required=True,
     help="Path to a YAML configuration file.",
 )
-@click.option(
-    "--log-file",
-    "-l",
-    type=click.Path(dir_okay=False, path_type=Path),
-    required=False,
-    default=None,
-    help="Optional path to a log file. If provided, logs are written to stdout and this file.",
-)
-def calibrate(config, log_file, resume, run_id):
-    # set up the logger
-    logger = setup_logging(log_file)
-    logger.info("Running the calibration step of the experiment.")
-
+def calibrate(config):
     # set up the paths and the config
     paths = Paths.from_env()
     cfg = Config.from_yaml(config)
 
     # create a run id
     # __dict__ isn't recursive - TODO: fix
-    run_id = generate_run_id("calidration", cfg.__dict__)
+    run_id = generate_run_id("calidration", config)
+    
+    # set up the logger
+    logger = setup_logging(paths.run(run_id).log_file())
+    logger.info("Running the calibration step of the experiment.")
     logger.info(f"Run id is {run_id}.")
 
     # load in the datasets training split
@@ -143,7 +141,10 @@ def calibrate(config, log_file, resume, run_id):
     # stratified subsample to the amount specifier in the config if required
     num_subsamples = cfg.calibration.subsample
     if num_subsamples:
-        train_embeddings = train_embeddings.stratified_sample(num_subsamples)
+        train_embeddings = {
+            name: embeddings.stratified_sample(num_subsamples)
+            for name, embeddings in train_embeddings.items()
+        }
 
     # generate the folds
     # note that the folds should be generated from the sampled training set, not the full training set
@@ -163,6 +164,7 @@ def calibrate(config, log_file, resume, run_id):
 
     # for each projector in the calibration config
     results = {}
+
     for projector in cfg.calibration.projectors:
         logger.info(
             f"Evaluating projector: {projector.name}: hyperparameters {projector.params}"
@@ -180,13 +182,21 @@ def calibrate(config, log_file, resume, run_id):
         # we want the calibration for each projector over all datasets
         projector_results = []
         for dataset_name, embeddings in train_embeddings.items():
-            logger.info(f"Evaluating projectors ondataset: {dataset_name}")
+            logger.info(f"Evaluating projector {projector.name} on dataset: {dataset_name}")
+            logger.info(f"Number of samples: {embeddings.num_samples()}")
+
 
             embeddings_future = client.scatter(embeddings, broadcast=False)
             folds = dataset_folds[dataset_name]
             seeds = cfg.seeds.calibration
 
-            for n_components in cfg.calibration.dimensions:
+            # for the dimensions, we ensure that the full size of the embeddings is present
+            dimensions = cfg.calibration.dimensions
+            # embedding_size = embeddings.num_dimensions()
+            # if embedding_size not in dimensions:
+            #     dimensions.append(embedding_size)
+
+            for n_components in dimensions:
                 futures = [
                     client.submit(
                         score_projector_config_task,
@@ -198,19 +208,42 @@ def calibrate(config, log_file, resume, run_id):
                         n_components,
                         seeds,
                         folds,
+                        params_idx, # params index allows us to analyse based on the mean for params
                         pure=False,
                     )
-                    for projector_hyperparams in param_grid
+                    for params_idx, projector_hyperparams in enumerate(param_grid)
                 ]
 
-                projector_results.extend(client.gather(futures))
+                desc = f"{projector.name} | {dataset_name} | d={n_components}"
+                for future in tqdm(as_completed(futures), total=len(futures), desc=desc):
+                    projector_results.append(future.result())
+
+                    #projector_results.extend(client.gather(futures))
 
         results["projector"] = pd.DataFrame(projector_results)
 
     # save the results per projector
-    for projector, results_df in results:
-        output_path = paths.projector_calibration(projector)
-        results_df.to_csv(output_path, index=False)
+    for projector, results_df in results.items():
+        output_path = paths.run(run_id).calibration().projector(projector)
+        output_path.mkdir(parents=True, exist_ok=True)
+        results_df.to_csv(output_path / 'scores.csv', index=False)
+
+        # find the best hyperparameters for each projector, for each dataset
+        # 1. compute the average score for each hyperparameter set (based on the params idx) over the dims
+        # 2. select the top performing one
+        score_to_select = cfg.calibration.select
+        mean_per_hyperparams = results_df.groupby('params_idx')[score_to_select].mean()
+        best_params_idx = mean_per_hyperparams.idxmax()
+        best_row = results_df[results_df["params_idx"] == best_params_idx].iloc[0]
+        best_row_json = best_row.to_dict()
+
+        logger.info(f"The best hyperparameters for the {projector} projector were:")
+        logger.info(best_row_json)
+
+        # save
+        with open(output_path / "best_params.json", "w") as f:
+            json.dump(best_row_json, f, indent=2)
+
 
     elapsed_time = perf_counter() - start_time
     logger.info(f"\nTotal time: {elapsed_time:.2f} seconds")

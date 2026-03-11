@@ -36,6 +36,7 @@ class CalibrationConfig:
     measurements: list[MeasurementConfig] = field(default_factory=list)
     projectors: list[ProjectorConfig] = field(default_factory=list)
     subsample: int = None
+    select: str = None
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "CalibrationConfig":

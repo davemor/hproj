@@ -2,7 +2,10 @@ import os
 from dotenv import load_dotenv
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from hproj.data.feature_space import FeatureSpace
 
 load_dotenv()
 
@@ -105,8 +108,19 @@ class EmbeddingsSplitPath:
 class RunPath:
     root: Path
 
-    def projector_calibration(self, projector: str):
-        return self.root / 'calibration' / projector.csv
+    def log_file(self) -> Path:
+        return self.root / 'log.txt'
+
+    def calibration(self):
+        return CalibrationPaths(self.root / 'calibration')
+
+
+@dataclass
+class CalibrationPaths:
+    root: Path
+
+    def projector(self, projctor_name: str):
+        return self.root / 'projectors' / f"{projctor_name}"
     
-    def classifier_calibration(self, classifier: str):
-        return self.root / 'calibration' / classifier.csv
+    def classifier(self, classifier_name: str):
+        return self.root / 'classifier' / f"{classifier_name}"

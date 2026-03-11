@@ -11,15 +11,16 @@ seeds:
   evaluation: [0, 1, 2, 3, 4]
 
 # set the number of folds for cross-validation
-num_folds: 5
+num_folds: 3
 
 calibration:
-  dimensions: [1,2]  # note that D is always added
-  subsample: 10_000  # specify the total size of the dataset
+  select: mean-knn-score-mean
+  subsample: 10_000  # subsample each dataset down to 10k (about 10%)
+  dimensions: [8]  # note that D is always added
   measurements:
     - name: mean-knn-score
       params:
-        ks: [5,15,30]
+        ks: [5,30]
   projectors:
     - name: pca
       params:
@@ -29,8 +30,8 @@ calibration:
         {}
     - name: umap
       params:
-        n_neighbors: [2, 5]
-        min_dist: [0.0, 0.1, 0.99]
+        n_neighbors: [5, 30]
+        min_dist: [0.25, 0.5,]
         metric: [cosine]  # these are image embeddings
   # classifiers:
   #   - name: logistic_regression

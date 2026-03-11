@@ -2,7 +2,7 @@ import click
 
 from dotenv import load_dotenv
 
-from hproj.cli import example
+from hproj.cli import example, calibrate
 
 load_dotenv()
 
@@ -13,6 +13,7 @@ def cli():
 
 
 cli.add_command(example)
+cli.add_command(calibrate)
 
 
 def main():

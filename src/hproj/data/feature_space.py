@@ -32,6 +32,9 @@ class FeatureSpace:
 
     def num_samples(self):
         return self.features.shape[0]
+    
+    def num_dimensions(self):
+        return self.features.shape[1]
 
     def num_classes(self):
         return int(cp.unique(self.labels).shape[0])

@@ -11,7 +11,7 @@ class PCAProjector(Projector):
 
     def fit(self, space: FeatureSpace) -> None:
         self.pca = PCA(
-            n_components=self.n_components, random_state=self.seed, **self.kwargs
+            n_components=self.n_components, **self.kwargs
         )
         self.pca.fit(space.features)
 

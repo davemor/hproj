@@ -21,6 +21,7 @@ seeds:
 num_folds: 5
 
 calibration:
+  select: mean-knn-score-mean
   dimensions: [1,2,4,8,16,32,128,256,512,1024]  # note that D is always added
   measurements:
     - name: mean-knn-score

@@ -9,7 +9,7 @@ def setup_logging(log_file: Path | None) -> logging.Logger:
     Configure a logger that writes to stdout and (optionally) a file.
     Returns a module-level logger instance.
     """
-    logger = logging.getLogger("hdims.projection")
+    logger = logging.getLogger("hproj")
     logger.setLevel(logging.INFO)
 
     # avoid duplicate handlers if Click re-invokes or tests import repeatedly.
