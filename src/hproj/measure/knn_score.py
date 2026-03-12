@@ -1,8 +1,7 @@
 from statistics import mean
 
-import cupy as cp
-from cuml.neighbors import KNeighborsClassifier
 from cuml.metrics import accuracy_score
+from cuml.neighbors import KNeighborsClassifier
 
 from hproj.data.feature_space import FeatureSpace
 from hproj.measure.measurement import Measurement, MeasurementFactory

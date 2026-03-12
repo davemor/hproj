@@ -1,16 +1,13 @@
-from itertools import product
 import json
+from itertools import product
 from pathlib import Path
 from statistics import mean
 from time import perf_counter
 
 import click
-import numpy as np
-from dask.distributed import Client
-from dask_cuda import LocalCUDACluster
 import pandas as pd
-
-from dask.distributed import as_completed
+from dask.distributed import Client, as_completed
+from dask_cuda import LocalCUDACluster
 from tqdm.auto import tqdm
 
 from hproj.data.feature_space import FeatureSpace
@@ -22,6 +19,7 @@ from hproj.util.config import Config, MeasurementConfig
 from hproj.util.hyperparams import make_param_grid
 from hproj.util.logging import setup_logging
 from hproj.util.runs import generate_run_id
+from hproj.util.seeds import make_seed
 
 
 def score_projector_config(
@@ -57,50 +55,80 @@ def score_projector_config_task(
     proj_hyperparams: dict,
     measurement_configs: list[MeasurementConfig],
     n_components,
-    seeds,
+    base_seed,
     folds,
     params_idx
 ):
-    def score(seed):
-        projector = ProjectorFactory.create(
-            proj_name, n_components, seed, **proj_hyperparams
-        )
-        measurements = [
-            MeasurementFactory.create(c.name, seed, **c.params)
-            for c in measurement_configs
-        ]
-        scores = score_projector_config(
-            embeddings_future, projector, measurements, folds
-        )
-        return scores
+    seed = make_seed(base_seed, dataset_name, proj_name, proj_hyperparams, n_components) 
 
-    def summarize(results):
-        keys = results[0].keys()
-        summary = {}
-
-        for k in keys:
-            values = np.array([r[k] for r in results])
-            summary[f"{k}-mean"] = values.mean()
-            summary[f"{k}-std"] = values.std(ddof=1) if len(values) > 1 else 0.0
-
-        return summary
-
-    # compute the scores for the measurements over all the seeds
-    scores_for_seeds = [score(seed) for seed in seeds]
-
-    # report mean ± std over N runs
-    results = summarize(scores_for_seeds)
+    projector = ProjectorFactory.create(
+        proj_name, n_components, seed, **proj_hyperparams
+    )
+    measurements = [
+        MeasurementFactory.create(c.name, seed, **c.params)
+        for c in measurement_configs
+    ]
+    scores = score_projector_config(
+        embeddings_future, projector, measurements, folds
+    )
 
     # add the meta data
     meta_data = {
         "projector": proj_name,
         "dataset": dataset_name,
         "n_components": n_components,
-        "num_seeds": len(seeds),
+        "seed": seed,
         "params_idx": params_idx
     }
-    return meta_data | proj_hyperparams | results
+    return meta_data | proj_hyperparams | scores
 
+def summarize_seed_results(seed_results_df: pd.DataFrame, score_columns: list[str]) -> pd.DataFrame:
+    group_cols = [
+        "projector",
+        "dataset",
+        "n_components",
+        "params_idx",
+    ]
+
+    # detect hyperparameter columns automatically
+    hyperparam_cols = [
+        c for c in seed_results_df.columns
+        if c not in group_cols + ["seed"] + score_columns
+    ]
+
+    group_cols = group_cols + hyperparam_cols
+
+    agg = {}
+
+    for col in score_columns:
+        agg[col] = ["mean", "std"]
+
+    summary = (
+        seed_results_df
+        .groupby(group_cols)
+        .agg(agg)
+    )
+
+    # flatten multiindex columns
+    summary.columns = [
+        f"{metric}-{stat}" for metric, stat in summary.columns
+    ]
+
+    summary = summary.reset_index()
+
+    summary["num_seeds"] = (
+        seed_results_df
+        .groupby(group_cols)
+        .size()
+        .values
+    )
+
+    # replace NaN std when only one seed
+    for col in score_columns:
+        std_col = f"{col}-std"
+        summary[std_col] = summary[std_col].fillna(0.0)
+
+    return summary
 
 def make_dask_client():
     cluster = LocalCUDACluster(
@@ -124,7 +152,6 @@ def calibrate(config):
     cfg = Config.from_yaml(config)
 
     # create a run id
-    # __dict__ isn't recursive - TODO: fix
     run_id = generate_run_id("calidration", config)
     
     # set up the logger
@@ -158,13 +185,10 @@ def calibrate(config):
 
     # set up the parrallel client
     client, cluster = make_dask_client()
-    
+
     try:
         # timings
         start_time = perf_counter()
-
-        # for each projector in the calibration config
-        results = {}
 
         for projector in cfg.calibration.projectors:
             logger.info(
@@ -181,7 +205,7 @@ def calibrate(config):
             )
 
             # we want the calibration for each projector over all datasets
-            projector_results = []
+            seed_level_results = []
             for dataset_name, embeddings in train_embeddings.items():
                 logger.info(f"Evaluating projector {projector.name} on dataset: {dataset_name}")
                 logger.info(f"Number of samples: {embeddings.num_samples()}")
@@ -189,7 +213,7 @@ def calibrate(config):
 
                 embeddings_future = client.scatter(embeddings, broadcast=True)
                 folds = dataset_folds[dataset_name]
-                seeds = cfg.seeds.calibration
+                base_seeds = cfg.seeds.calibration
 
                 # for the dimensions, we ensure that the full size of the embeddings is present
                 dimensions = cfg.calibration.dimensions
@@ -207,44 +231,45 @@ def calibrate(config):
                             projector_hyperparams,
                             cfg.calibration.measurements,
                             n_components,
-                            seeds,
+                            seed,
                             folds,
                             params_idx, # params index allows us to analyse based on the mean for params
                             pure=False,
                         )
                         for params_idx, projector_hyperparams in enumerate(param_grid)
+                        for seed in base_seeds
                     ]
 
                     desc = f"{projector.name} | {dataset_name} | d={n_components}"
                     for future in tqdm(as_completed(futures), total=len(futures), desc=desc):
-                        projector_results.append(future.result())
+                        seed_level_results.append(future.result())
 
-                        #projector_results.extend(client.gather(futures))
+            # summarise the results for the projector over all the seeds
+            seed_results_df = pd.DataFrame(seed_level_results)
+            metric_names = [m.name for m in cfg.calibration.measurements]
+            projector_results_df = summarize_seed_results(seed_results_df, metric_names)
 
-            results[projector.name] = pd.DataFrame(projector_results)
-
-        # save the results per projector
-        for projector, results_df in results.items():
-            output_path = paths.run(run_id).calibration().projector(projector)
+            # save over the results
+            output_path = paths.run(run_id).calibration().projector(projector.name)
             output_path.mkdir(parents=True, exist_ok=True)
-            results_df.to_csv(output_path / 'scores.csv', index=False)
+            logger.info(f'Saving results to {output_path}')
+            seed_results_df.to_csv(output_path / "seed_scores.csv", index=False)
+            projector_results_df.to_csv(output_path / "scores.csv", index=False)
 
-            # find the best hyperparameters for each projector, for each dataset
-            # 1. compute the average score for each hyperparameter set (based on the params idx) over the dims
-            # 2. select the top performing one
-            score_to_select = cfg.calibration.select
-            mean_per_hyperparams = results_df.groupby('params_idx')[score_to_select].mean()
+            # find the best hyper parameters and save them to json
+            #   compute the mean for each hyperparameter over each dimension and dataset
+            #       note that we are not doing a per dataset fit
+            #   find the best one
+            #   save to json
+            mean_per_hyperparams = projector_results_df.groupby("params_idx")[cfg.calibration.select].mean()
             best_params_idx = mean_per_hyperparams.idxmax()
-            best_row = results_df[results_df["params_idx"] == best_params_idx].iloc[0]
+            best_row = projector_results_df[projector_results_df["params_idx"] == best_params_idx].iloc[0]
             best_row_json = best_row.to_dict()
-
-            logger.info(f"The best hyperparameters for the {projector} projector were:")
-            logger.info(best_row_json)
-
-            # save
             with open(output_path / "best_params.json", "w") as f:
                 json.dump(best_row_json, f, indent=2)
 
+            logger.info(f"The best hyperparameters for the {projector.name} projector were:")
+            logger.info(best_row_json)
 
         elapsed_time = perf_counter() - start_time
         logger.info(f"\nTotal time: {elapsed_time:.2f} seconds")

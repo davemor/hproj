@@ -1,8 +1,7 @@
 import click
-
 from dotenv import load_dotenv
 
-from hproj.cli import example, calibrate
+from hproj.cli import calibrate, example
 
 load_dotenv()
 

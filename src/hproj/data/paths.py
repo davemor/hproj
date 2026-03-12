@@ -1,8 +1,9 @@
 import os
-from dotenv import load_dotenv
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
+
+from dotenv import load_dotenv
 
 if TYPE_CHECKING:
     from hproj.data.feature_space import FeatureSpace

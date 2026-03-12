@@ -1,11 +1,9 @@
 import click
-
-from dask.distributed import Client
-from dask_cuda import LocalCUDACluster
-
 from cuml.dask.cluster import KMeans
 from cuml.dask.datasets import make_blobs
 from cuml.metrics import adjusted_rand_score
+from dask.distributed import Client
+from dask_cuda import LocalCUDACluster
 
 
 @click.command()

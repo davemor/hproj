@@ -1,6 +1,8 @@
 from cuml import PCA
+
 from hproj.data.feature_space import FeatureSpace
 from hproj.projectors.projector import Projector, ProjectorFactory
+
 
 @ProjectorFactory.register("pca")
 class PCAProjector(Projector):

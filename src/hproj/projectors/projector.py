@@ -1,7 +1,5 @@
 import abc
 
-from cuml.manifold import UMAP
-
 from hproj.data.feature_space import FeatureSpace
 
 

@@ -1,2 +1,2 @@
-from .example import *
 from .calibrate import *
+from .example import *

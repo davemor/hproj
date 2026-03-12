@@ -3,6 +3,7 @@ from cuml.random_projection import GaussianRandomProjection
 from hproj.data.feature_space import FeatureSpace
 from hproj.projectors.projector import Projector, ProjectorFactory
 
+
 @ProjectorFactory.register("grp")
 class GRPProjector(Projector):
     def __init__(self, n_components, seed, **kwargs):

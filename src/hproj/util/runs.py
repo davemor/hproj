@@ -1,11 +1,10 @@
-from datetime import datetime, timezone
 import hashlib
 import json
-from pathlib import Path
 import re
+from datetime import datetime, timezone
+from pathlib import Path
 
 import yaml
-
 
 
 def generate_run_id(experiment_name: str, config_path: Path) -> str:

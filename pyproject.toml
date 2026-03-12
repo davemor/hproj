@@ -21,6 +21,16 @@ hproj = "hproj.__main__:main"
 requires = ["uv_build>=0.9.26,<0.10.0"]
 build-backend = "uv_build"
 
+[tool.ruff]
+line-length = 88
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+
+[tool.ruff.format]
+docstring-code-format = true
+
 [dependency-groups]
 dev = [
     "black>=26.3.0",

@@ -1,6 +1,7 @@
+from typing import TYPE_CHECKING
+
 import cupy as cp
 from sklearn.model_selection import StratifiedKFold
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from hproj.data.feature_space import FeatureSpace

@@ -1,12 +1,13 @@
 datasets:
   - kather100k
+  - spider-colorectal
 
 encoders:
   - uni2
 
 # paired seeds
 seeds: 
-  calibration: [0]
+  calibration: [0, 1]
   curve: [0, 1, 2]
   evaluation: [0, 1, 2, 3, 4]
 
@@ -16,7 +17,7 @@ num_folds: 3
 calibration:
   select: mean-knn-score-mean
   subsample: 1_000  # subsample each dataset down to 1k (about 1%)
-  dimensions: [8]
+  dimensions: [2,8]
   measurements:
     - name: mean-knn-score
       params:
@@ -31,7 +32,7 @@ calibration:
     - name: umap
       params:
         n_neighbors: [5, 30]
-        min_dist: [0.25, 0.5,]
+        min_dist: [0.25, 0.5]
         metric: [cosine]  # these are image embeddings
   # classifiers:
   #   - name: logistic_regression

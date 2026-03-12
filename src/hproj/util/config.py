@@ -4,9 +4,6 @@ from typing import Any
 
 import yaml
 
-from hproj.measure.knn_score import KNNMeanScore
-from hproj.projectors.umap import UMAPProjector
-
 
 @dataclass
 class MeasurementConfig:
