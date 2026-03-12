@@ -1,7 +1,7 @@
 import click
 from dotenv import load_dotenv
 
-from hproj.cli import calibrate, example
+from hproj.cli import calibrate_projector, example
 
 load_dotenv()
 
@@ -12,7 +12,7 @@ def cli():
 
 
 cli.add_command(example)
-cli.add_command(calibrate)
+cli.add_command(calibrate_projector)
 
 
 def main():

@@ -146,7 +146,7 @@ def make_dask_client():
     required=True,
     help="Path to a YAML configuration file.",
 )
-def calibrate(config):
+def calibrate_projector(config):
     # set up the paths and the config
     paths = Paths.from_env()
     cfg = Config.from_yaml(config)
