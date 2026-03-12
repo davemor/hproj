@@ -6,7 +6,7 @@ encoders:
 
 # paired seeds
 seeds: 
-  calibration: [0, 1]
+  calibration: [0]
   curve: [0, 1, 2]
   evaluation: [0, 1, 2, 3, 4]
 
@@ -15,8 +15,8 @@ num_folds: 3
 
 calibration:
   select: mean-knn-score-mean
-  subsample: 10_000  # subsample each dataset down to 10k (about 10%)
-  dimensions: [8]  # note that D is always added
+  subsample: 1_000  # subsample each dataset down to 1k (about 1%)
+  dimensions: [8]
   measurements:
     - name: mean-knn-score
       params:
