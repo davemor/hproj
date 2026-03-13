@@ -1,4 +1,5 @@
 import json
+import shutil
 from itertools import product
 from pathlib import Path
 from statistics import mean
@@ -13,8 +14,10 @@ from tqdm.auto import tqdm
 from hproj.data.feature_space import FeatureSpace
 from hproj.data.folds import Fold, generate_stratified_folds
 from hproj.data.paths import Paths
+from hproj.measure import measurement
 from hproj.measure.measurement import Measurement, MeasurementFactory
 from hproj.projectors.projector import Projector, ProjectorFactory
+from hproj.util.atomic import atomic_write_json
 from hproj.util.config import Config, MeasurementConfig
 from hproj.util.hyperparams import make_param_grid
 from hproj.util.logging import setup_logging
@@ -77,54 +80,45 @@ def score_projector_config_task(
         "projector": proj_name,
         "dataset": dataset_name,
         "n_components": n_components,
+        "base_seed": base_seed,
         "seed": seed,
         "params_idx": params_idx
     }
     return meta_data | proj_hyperparams | scores
 
-def summarize_seed_results(seed_results_df: pd.DataFrame, score_columns: list[str]) -> pd.DataFrame:
-    group_cols = [
-        "projector",
-        "dataset",
-        "n_components",
-        "params_idx",
-    ]
+def summarize_seed_results(seed_results_df: pd.DataFrame, measurements: list[Measurement]) -> pd.DataFrame:
+    measurement_names = [m.name for m in measurements]
+    print(seed_results_df.columns)
+    seed_results_df = seed_results_df.drop('seed', axis=1)  # we want to remote the actualy seed which is not a unique seed id and instead use base_seed
+    
+    group_cols = ["projector", "dataset", "n_components", "params_idx"]
 
     # detect hyperparameter columns automatically
+    # so anything that isn't in the:
+    # - columns we are going to group by
+    # - the base seed (which varies with the measurement in the group)
+    # - the column that contains the measurement value (e.g. mean-knn-score)
     hyperparam_cols = [
         c for c in seed_results_df.columns
-        if c not in group_cols + ["seed"] + score_columns
+        if c not in group_cols + ["base_seed"] + measurement_names
     ]
 
     group_cols = group_cols + hyperparam_cols
 
     agg = {}
-
-    for col in score_columns:
+    for col in measurement_names:
         agg[col] = ["mean", "std"]
-
-    summary = (
-        seed_results_df
-        .groupby(group_cols)
-        .agg(agg)
-    )
-
+        
+    summary = seed_results_df.groupby(group_cols).agg(agg)
+    
     # flatten multiindex columns
     summary.columns = [
         f"{metric}-{stat}" for metric, stat in summary.columns
     ]
-
     summary = summary.reset_index()
 
-    summary["num_seeds"] = (
-        seed_results_df
-        .groupby(group_cols)
-        .size()
-        .values
-    )
-
     # replace NaN std when only one seed
-    for col in score_columns:
+    for col in measurement_names:
         std_col = f"{col}-std"
         summary[std_col] = summary[std_col].fillna(0.0)
 
@@ -138,22 +132,55 @@ def make_dask_client():
     return client, cluster
 
 
+def make_task_key(projector: str, dataset: str, n_components: int, 
+                  params_idx: int, seed: int):
+    return (
+        f"{projector}_{dataset}_d{n_components}"
+        f"_p{params_idx}_s{seed}"
+    )
+
+def load_task_results(tasks_dir):
+    def load_task_result(task_path):
+        with open(task_path) as f:
+            task_dict = json.load(f)
+        return task_dict
+    
+    task_paths = tasks_dir.glob_tasks()
+    results = [load_task_result(p) for p in task_paths]
+    return pd.DataFrame(results)
+            
+
 @click.command()
 @click.option(
     "--config",
     "-c",
     type=click.Path(exists=True, dir_okay=False, path_type=Path),
-    required=True,
     help="Path to a YAML configuration file.",
+    default=None
 )
-def calibrate_projector(config):
-    # set up the paths and the config
-    paths = Paths.from_env()
-    cfg = Config.from_yaml(config)
+@click.option(
+    "--run-id", 
+    "-r",
+    type=str,
+    help="The id of a run to continue.",
+    default=None
+)
+def calibrate_projector(config: Path, run_id: str):
 
-    # create a run id
-    run_id = generate_run_id("calidration", config)
-    
+    # set up the run_id
+    assert not(config and run_id), "Use --config for a fresh run and --run-id "
+    paths = Paths.from_env()
+    if run_id:
+        cfg = Config.from_yaml(paths.data_root.run(run_id).config())  # load the config from the run dir
+    else:
+        run_id = generate_run_id('hproj', config)  # create a new run id
+        run_path = paths.run(run_id)
+        print(config)
+        print(config, run_path.config())
+        run_path.mkdir()  # make sure the output dir exists
+        shutil.copy(config, run_path.config())  # copy the config into the new runs output directory
+        cfg = Config.from_yaml(config)  # load the config from the config path given
+
     # set up the logger
     logger = setup_logging(paths.run(run_id).log_file())
     logger.info("Running the calibration step of the experiment.")
@@ -191,18 +218,21 @@ def calibrate_projector(config):
         start_time = perf_counter()
 
         for projector in cfg.calibration.projectors:
-            logger.info(
-                f"Evaluating projector: {projector.name}: hyperparameters {projector.params}"
-            )
+            logger.info(f"Evaluating projector: {projector.name}")
+            logger.info(f"Hyperparams: {projector.params}")
             if len(projector.params) == 0:
                 logger.info("No hyperparameters to tune, skipping.")
                 continue
 
+            # setup the output path for the projectors calibration data
+            output_path = paths.run(run_id).calibration().projector(projector.name)
+            output_path.mkdir()
+            tasks_dir = output_path.tasks()
+            tasks_dir.mkdir()
+
             # geneate the hyperparameter grid for this projector
             param_grid = make_param_grid(projector.params)
-            logger.info(
-                f"Generated {len(param_grid)} hyperparameter combinations to evaluate."
-            )
+            logger.info(f"Generated {len(param_grid)} hyperparameter configs.")
 
             # we want the calibration for each projector over all datasets
             seed_level_results = []
@@ -210,69 +240,70 @@ def calibrate_projector(config):
                 logger.info(f"Evaluating projector {projector.name} on dataset: {dataset_name}")
                 logger.info(f"Number of samples: {embeddings.num_samples()}")
 
-
                 embeddings_future = client.scatter(embeddings, broadcast=True)
                 folds = dataset_folds[dataset_name]
                 base_seeds = cfg.seeds.calibration
 
-                # for the dimensions, we ensure that the full size of the embeddings is present
-                dimensions = cfg.calibration.dimensions
-                # embedding_size = embeddings.num_dimensions()
-                # if embedding_size not in dimensions:
-                #     dimensions.append(embedding_size)
+                for n_components in cfg.calibration.dimensions:
+                    pending_tasks = {}  # future: task_file
+                    for params_idx, projector_hyperparams in enumerate(param_grid):
+                        for base_seed in base_seeds:
+      
+                            task_key = make_task_key(projector.name, dataset_name, n_components, params_idx, base_seed)
+                            task_file = tasks_dir.task(task_key)
+                            if task_file.exists():
+                                continue
 
-                for n_components in dimensions:
-                    futures = [
-                        client.submit(
-                            score_projector_config_task,
-                            embeddings_future,
-                            dataset_name,
-                            projector.name,
-                            projector_hyperparams,
-                            cfg.calibration.measurements,
-                            n_components,
-                            seed,
-                            folds,
-                            params_idx, # params index allows us to analyse based on the mean for params
-                            pure=False,
-                        )
-                        for params_idx, projector_hyperparams in enumerate(param_grid)
-                        for seed in base_seeds
-                    ]
+                            future = client.submit(
+                                    score_projector_config_task,
+                                    embeddings_future,
+                                    dataset_name,
+                                    projector.name,
+                                    projector_hyperparams,
+                                    cfg.calibration.measurements,
+                                    n_components,
+                                    base_seed,
+                                    folds,
+                                    params_idx, # params index allows us to analyse based on the mean for params
+                                    pure=False)
+                        
+                            pending_tasks[future] = task_file
 
                     desc = f"{projector.name} | {dataset_name} | d={n_components}"
-                    for future in tqdm(as_completed(futures), total=len(futures), desc=desc):
-                        seed_level_results.append(future.result())
+                    for future in tqdm(as_completed(pending_tasks.keys()), total=len(pending_tasks), desc=desc):
+                        results = future.result()
+                        task_file = pending_tasks[future]
+                        atomic_write_json(task_file, results)
 
             # summarise the results for the projector over all the seeds
-            seed_results_df = pd.DataFrame(seed_level_results)
-            metric_names = [m.name for m in cfg.calibration.measurements]
-            projector_results_df = summarize_seed_results(seed_results_df, metric_names)
+            seed_results_df = load_task_results(output_path.tasks())
+            projector_results_df = summarize_seed_results(seed_results_df, cfg.calibration.measurements)
 
-            # save over the results
+            # # save over the results
             output_path = paths.run(run_id).calibration().projector(projector.name)
-            output_path.mkdir(parents=True, exist_ok=True)
-            logger.info(f'Saving results to {output_path}')
-            seed_results_df.to_csv(output_path / "seed_scores.csv", index=False)
-            projector_results_df.to_csv(output_path / "scores.csv", index=False)
+            output_path.mkdir()
+            logger.info(f'Saving results to {output_path.root}')
+            seed_results_df.to_csv(output_path.seed_scores(), index=False)
+            projector_results_df.to_csv(output_path.scores(), index=False)
 
-            # find the best hyper parameters and save them to json
-            #   compute the mean for each hyperparameter over each dimension and dataset
-            #       note that we are not doing a per dataset fit
-            #   find the best one
-            #   save to json
-            mean_per_hyperparams = projector_results_df.groupby("params_idx")[cfg.calibration.select].mean()
-            best_params_idx = mean_per_hyperparams.idxmax()
-            best_row = projector_results_df[projector_results_df["params_idx"] == best_params_idx].iloc[0]
-            best_row_json = best_row.to_dict()
-            with open(output_path / "best_params.json", "w") as f:
-                json.dump(best_row_json, f, indent=2)
+            # # find the best hyper parameters and save them to json
+            # #   compute the mean for each hyperparameter over each dimension and dataset
+            # #       note that we are not doing a per dataset fit
+            # #   find the best one
+            # #   save to json
+            # mean_per_hyperparams = projector_results_df.groupby("params_idx")[cfg.calibration.select].mean()
+            # best_params_idx = mean_per_hyperparams.idxmax()
+            # best_row = projector_results_df[projector_results_df["params_idx"] == best_params_idx].iloc[0]
+            # best_row_json = best_row.to_dict()
+            # with open(output_path / "best_params.json", "w") as f:
+            #     json.dump(best_row_json, f, indent=2)
 
-            logger.info(f"The best hyperparameters for the {projector.name} projector were:")
-            logger.info(best_row_json)
+            # logger.info(f"The best hyperparameters for the {projector.name} projector were:")
+            # logger.info(best_row_json)
 
         elapsed_time = perf_counter() - start_time
-        logger.info(f"\nTotal time: {elapsed_time:.2f} seconds")
+        logger.info(f"Total time: {elapsed_time:.2f} seconds")
+        logger.info(f"Run output saved to: {run_path.root}")
 
     finally:
         client.close()

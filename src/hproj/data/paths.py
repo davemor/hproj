@@ -11,6 +11,11 @@ if TYPE_CHECKING:
 load_dotenv()
 
 
+class OutputPath:
+    def mkdir(self):
+        return self.root.mkdir(parents=True, exist_ok=True)
+
+
 @dataclass
 class Paths:
     embeddings_root: Path
@@ -96,7 +101,6 @@ class EmbeddingsSplitPath:
     # non path related helper method
     def load(self) -> "FeatureSpace":
         from hproj.data.feature_space import load_embeddings
-
         return load_embeddings(self)
 
 
@@ -106,8 +110,11 @@ class EmbeddingsSplitPath:
 
 
 @dataclass
-class RunPath:
+class RunPath(OutputPath):
     root: Path
+
+    def config(self) -> Path:
+        return self.root / 'config.yml'
 
     def log_file(self) -> Path:
         return self.root / 'log.txt'
@@ -117,11 +124,39 @@ class RunPath:
 
 
 @dataclass
-class CalibrationPaths:
+class CalibrationPaths(OutputPath):
     root: Path
 
     def projector(self, projctor_name: str):
-        return self.root / 'projectors' / f"{projctor_name}"
+        return ProjectorCalibrationPaths(self.root / 'projectors' / f"{projctor_name}")
     
     def classifier(self, classifier_name: str):
         return self.root / 'classifier' / f"{classifier_name}"
+    
+
+@dataclass
+class ProjectorCalibrationPaths(OutputPath):
+    root: Path
+    
+    def tasks(self) -> 'TasksDir':
+        return TasksDir(self.root / 'tasks')
+    
+    def seed_scores(self) -> Path:
+        return self.root / 'seed_scores.csv'
+    
+    def scores(self) -> Path:
+        return self.root / 'scores.csv'
+    
+    def best_params(self) -> Path:
+        return self.root / 'best_params.json'
+
+
+@dataclass
+class TasksDir(OutputPath):
+    root: Path
+
+    def task(self, key) -> Path:
+        return self.root / f"{key}.json"
+    
+    def glob_tasks(self) -> list[Path]:
+        return list(self.root.glob('*.json'))
