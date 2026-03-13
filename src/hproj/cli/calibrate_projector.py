@@ -14,7 +14,6 @@ from tqdm.auto import tqdm
 from hproj.data.feature_space import FeatureSpace
 from hproj.data.folds import Fold, generate_stratified_folds
 from hproj.data.paths import Paths
-from hproj.measure import measurement
 from hproj.measure.measurement import Measurement, MeasurementFactory
 from hproj.projectors.projector import Projector, ProjectorFactory
 from hproj.util.atomic import atomic_write_json
@@ -86,11 +85,11 @@ def score_projector_config_task(
     }
     return meta_data | proj_hyperparams | scores
 
-def summarize_seed_results(seed_results_df: pd.DataFrame, measurements: list[Measurement]) -> pd.DataFrame:
+def summarize_over_seeds(seed_results_df: pd.DataFrame, measurements: list[Measurement]) -> pd.DataFrame:
     measurement_names = [m.name for m in measurements]
-    print(seed_results_df.columns)
     seed_results_df = seed_results_df.drop('seed', axis=1)  # we want to remote the actualy seed which is not a unique seed id and instead use base_seed
     
+    # note that base seed is not in this list because we want to aggrigate over all the seeds
     group_cols = ["projector", "dataset", "n_components", "params_idx"]
 
     # detect hyperparameter columns automatically
@@ -108,7 +107,7 @@ def summarize_seed_results(seed_results_df: pd.DataFrame, measurements: list[Mea
     agg = {}
     for col in measurement_names:
         agg[col] = ["mean", "std"]
-        
+
     summary = seed_results_df.groupby(group_cols).agg(agg)
     
     # flatten multiindex columns
@@ -147,7 +146,68 @@ def load_task_results(tasks_dir):
     
     task_paths = tasks_dir.glob_tasks()
     results = [load_task_result(p) for p in task_paths]
-    return pd.DataFrame(results)
+    results_df =  pd.DataFrame(results)
+    print(results_df.head())
+    return results_df
+
+def summarize_over_dimensions(projector_results_df, measurements):
+    """
+    This returns the mean score over all the dimensions for each projector configuration for the each dataset.
+    """
+    measurement_names = [m.name for m in measurements]
+
+    group_cols = ["projector", "dataset", "params_idx"]
+    measurement_cols = [x for name in measurement_names for x in (f"{name}-mean", f"{name}-std")]
+    hyperparam_cols = [
+        c for c in projector_results_df.columns
+        if c not in group_cols + ["n_components"] + measurement_cols
+    ]
+    group_cols = group_cols + hyperparam_cols
+
+    agg = {}
+    for col in measurement_cols:
+        agg[col] = ["mean", "std"]
+
+    summary = projector_results_df.groupby(group_cols).agg(agg)
+    
+    # flatten multiindex columns
+    summary.columns = [
+        f"{metric}-{stat}" for metric, stat in summary.columns
+    ]
+    summary = summary.reset_index()
+
+    # TODO: recall that there might be nas in the columns if there is only one dim
+
+    return summary 
+
+def summmrize_over_datasets(projector_results_df, measurements):
+    measurement_names = [m.name for m in measurements]
+
+    group_cols = ["projector", "params_idx"]
+    measurement_cols = [x for name in measurement_names for x in (f"{name}-mean-mean", f"{name}-mean-std, {name}-std-mean", f"{name}-std-std")]
+    hyperparam_cols = [
+        c for c in projector_results_df.columns
+        if c not in group_cols + ["dataset"] + measurement_cols
+    ]
+    group_cols = group_cols + hyperparam_cols
+
+    agg = {}
+    for col in measurement_cols:
+        agg[col] = ["mean", "std"]
+
+    summary = projector_results_df.groupby(group_cols).agg(agg)
+    
+    # flatten multiindex columns
+    summary.columns = [
+        f"{metric}-{stat}" for metric, stat in summary.columns
+    ]
+    summary = summary.reset_index()
+
+    # TODO: recall that there might be nas in the columns if there is only one dim
+
+    return summary 
+
+
             
 
 @click.command()
@@ -276,15 +336,31 @@ def calibrate_projector(config: Path, run_id: str):
                         atomic_write_json(task_file, results)
 
             # summarise the results for the projector over all the seeds
-            seed_results_df = load_task_results(output_path.tasks())
-            projector_results_df = summarize_seed_results(seed_results_df, cfg.calibration.measurements)
+            results_df = load_task_results(output_path.tasks())
 
-            # # save over the results
+            print(results_df)
+
+            summary_results_df = summarize_over_seeds(results_df, cfg.calibration.measurements)
+
+            print(summary_results_df.head())
+
+            summary_results_df = summarize_over_dimensions(summary_results_df, cfg.calibration.measurements)
+
+            print(summary_results_df.head())
+
+            summary_results_df = summmrize_over_datasets(summary_results_df, cfg.calibration.measurements)  # this is the mean performance for each config over each projector
+
+            print(summary_results_df.head())
+
+            # save over the results
             output_path = paths.run(run_id).calibration().projector(projector.name)
             output_path.mkdir()
             logger.info(f'Saving results to {output_path.root}')
-            seed_results_df.to_csv(output_path.seed_scores(), index=False)
-            projector_results_df.to_csv(output_path.scores(), index=False)
+            results_df.to_csv(output_path.seed_scores(), index=False)
+            summary_results_df.to_csv(output_path.scores(), index=False)
+
+            # now we have the mean performance of each projector hyperparameter config
+
 
             # # find the best hyper parameters and save them to json
             # #   compute the mean for each hyperparameter over each dimension and dataset
