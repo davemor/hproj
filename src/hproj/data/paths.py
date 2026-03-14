@@ -141,10 +141,10 @@ class ProjectorCalibrationPaths(OutputPath):
     def tasks(self) -> 'TasksDir':
         return TasksDir(self.root / 'tasks')
     
-    def seed_scores(self) -> Path:
+    def scores(self) -> Path:
         return self.root / 'seed_scores.csv'
     
-    def scores(self) -> Path:
+    def summary(self) -> Path:
         return self.root / 'scores.csv'
     
     def best_params(self) -> Path:

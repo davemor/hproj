@@ -22,6 +22,9 @@ calibration:
     - name: mean-knn-score
       params:
         ks: [5,30]
+    - name: silhouette-score
+      params:
+        {}
   projectors:
     - name: pca
       params:

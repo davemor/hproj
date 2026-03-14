@@ -45,7 +45,7 @@ def score_projector_config(
 
     # compute the mean for each measurement across the folds
     mean_scores = {
-        key: float(mean(fold_scores)) for key, fold_scores in fold_scores.items()
+        key: float(mean(scores)) for key, scores in fold_scores.items()
     }
     return mean_scores
 
@@ -85,43 +85,6 @@ def score_projector_config_task(
     }
     return meta_data | proj_hyperparams | scores
 
-def summarize_over_seeds(seed_results_df: pd.DataFrame, measurements: list[Measurement]) -> pd.DataFrame:
-    measurement_names = [m.name for m in measurements]
-    seed_results_df = seed_results_df.drop('seed', axis=1)  # we want to remote the actualy seed which is not a unique seed id and instead use base_seed
-    
-    # note that base seed is not in this list because we want to aggrigate over all the seeds
-    group_cols = ["projector", "dataset", "n_components", "params_idx"]
-
-    # detect hyperparameter columns automatically
-    # so anything that isn't in the:
-    # - columns we are going to group by
-    # - the base seed (which varies with the measurement in the group)
-    # - the column that contains the measurement value (e.g. mean-knn-score)
-    hyperparam_cols = [
-        c for c in seed_results_df.columns
-        if c not in group_cols + ["base_seed"] + measurement_names
-    ]
-
-    group_cols = group_cols + hyperparam_cols
-
-    agg = {}
-    for col in measurement_names:
-        agg[col] = ["mean", "std"]
-
-    summary = seed_results_df.groupby(group_cols).agg(agg)
-    
-    # flatten multiindex columns
-    summary.columns = [
-        f"{metric}-{stat}" for metric, stat in summary.columns
-    ]
-    summary = summary.reset_index()
-
-    # replace NaN std when only one seed
-    for col in measurement_names:
-        std_col = f"{col}-std"
-        summary[std_col] = summary[std_col].fillna(0.0)
-
-    return summary
 
 def make_dask_client():
     cluster = LocalCUDACluster(
@@ -147,68 +110,73 @@ def load_task_results(tasks_dir):
     task_paths = tasks_dir.glob_tasks()
     results = [load_task_result(p) for p in task_paths]
     results_df =  pd.DataFrame(results)
-    print(results_df.head())
     return results_df
 
-def summarize_over_dimensions(projector_results_df, measurements):
-    """
-    This returns the mean score over all the dimensions for each projector configuration for the each dataset.
-    """
-    measurement_names = [m.name for m in measurements]
 
-    group_cols = ["projector", "dataset", "params_idx"]
-    measurement_cols = [x for name in measurement_names for x in (f"{name}-mean", f"{name}-std")]
-    hyperparam_cols = [
-        c for c in projector_results_df.columns
-        if c not in group_cols + ["n_components"] + measurement_cols
-    ]
-    group_cols = group_cols + hyperparam_cols
+def summaries_results_for_projector(
+    results_df: pd.DataFrame, 
+    rank_metric: str,
+    metrics: list[str],
+    sort_desc: bool = True
+    ) -> pd.DataFrame:
 
-    agg = {}
-    for col in measurement_cols:
-        agg[col] = ["mean", "std"]
+    assert rank_metric in metrics, "The rank_metric needs to be in the metrics we are measuring"
 
-    summary = projector_results_df.groupby(group_cols).agg(agg)
+    def aggrigate_group(df, cols_group, spec):
+        stats = df.groupby(cols_group, dropna=False)
+        stats = stats.agg(**spec).reset_index()
+        stats = stats.fillna(0.0)  # if there is one seed, seed_std will be na
+        return stats
+
+    def aggrigate_across_seeds() -> pd.DataFrame:
+        cols_group = ['dataset', 'params_idx', 'n_components']
+        spec = {}
+        for m in metrics:
+            spec[f'{m}_seed_mean'] = (m, 'mean')
+            spec[f'{m}_seed_std'] = (m, 'std')
+        return aggrigate_group(results_df, cols_group, spec)
     
-    # flatten multiindex columns
-    summary.columns = [
-        f"{metric}-{stat}" for metric, stat in summary.columns
-    ]
-    summary = summary.reset_index()
+    def aggrigate_across_dimensions(seed_stats: pd.DataFrame):
+        cols_group = ['dataset', 'params_idx']
+        spec = {}
+        for m in metrics:
+            spec[f"{m}_dim_median"] = (f"{m}_seed_mean", "median")
+            spec[f"{m}_dim_std"] = (f"{m}_seed_mean", "std")
+            spec[f"{m}_seed_std_mean"] = (f"{m}_seed_std", "mean")
+        return aggrigate_group(seed_stats, cols_group, spec)
 
-    # TODO: recall that there might be nas in the columns if there is only one dim
-
-    return summary 
-
-def summmrize_over_datasets(projector_results_df, measurements):
-    measurement_names = [m.name for m in measurements]
-
-    group_cols = ["projector", "params_idx"]
-    measurement_cols = [x for name in measurement_names for x in (f"{name}-mean-mean", f"{name}-mean-std, {name}-std-mean", f"{name}-std-std")]
-    hyperparam_cols = [
-        c for c in projector_results_df.columns
-        if c not in group_cols + ["dataset"] + measurement_cols
-    ]
-    group_cols = group_cols + hyperparam_cols
-
-    agg = {}
-    for col in measurement_cols:
-        agg[col] = ["mean", "std"]
-
-    summary = projector_results_df.groupby(group_cols).agg(agg)
-    
-    # flatten multiindex columns
-    summary.columns = [
-        f"{metric}-{stat}" for metric, stat in summary.columns
-    ]
-    summary = summary.reset_index()
-
-    # TODO: recall that there might be nas in the columns if there is only one dim
-
-    return summary 
+    def aggrigate_across_datasets(dims_stats: pd.DataFrame):
+        cols_group = ['params_idx']
+        spec = {}
+        for m in metrics:
+            spec[f"{m}_mean"] = (f"{m}_dim_median", "mean")
+            spec[f"{m}_dataset_std"] = (f"{m}_dim_median", "std")
+            spec[f"{m}_dim_std_mean"] = (f"{m}_dim_std", "mean")
+            spec[f"{m}_seed_std_mean"] = (f"{m}_seed_std_mean", "mean")
+        return aggrigate_group(dims_stats, cols_group, spec)
 
 
-            
+    seed_stats = aggrigate_across_seeds()
+    dims_stats = aggrigate_across_dimensions(seed_stats)
+    dataset_stats = aggrigate_across_datasets(dims_stats)
+
+    # sort based on the ranking metric
+    ranked = dataset_stats.sort_values(
+        by=[f'{rank_metric}_mean', f"{rank_metric}_dataset_std"],
+        ascending=[not sort_desc, True],
+        kind='mergesort'
+    )
+    return ranked
+
+def attach_projector_params_from_grid(
+    ranked_df: pd.DataFrame,
+    param_grid: list[dict],
+    params_col: str = "params_idx",
+) -> pd.DataFrame:
+    out = ranked_df.copy()
+    param_dicts = out[params_col].map(lambda i: param_grid[i])
+    params_expanded = pd.DataFrame(param_dicts.tolist(), index=out.index)
+    return pd.concat([out, params_expanded], axis=1)
 
 @click.command()
 @click.option(
@@ -235,8 +203,6 @@ def calibrate_projector(config: Path, run_id: str):
     else:
         run_id = generate_run_id('hproj', config)  # create a new run id
         run_path = paths.run(run_id)
-        print(config)
-        print(config, run_path.config())
         run_path.mkdir()  # make sure the output dir exists
         shutil.copy(config, run_path.config())  # copy the config into the new runs output directory
         cfg = Config.from_yaml(config)  # load the config from the config path given
@@ -337,45 +303,32 @@ def calibrate_projector(config: Path, run_id: str):
 
             # summarise the results for the projector over all the seeds
             results_df = load_task_results(output_path.tasks())
+            summary_df = summaries_results_for_projector(
+                results_df,
+                'mean-knn-score',
+                [m.name for m in cfg.calibration.measurements]
+            )
+            summary_df = attach_projector_params_from_grid(summary_df, param_grid)
 
-            print(results_df)
-
-            summary_results_df = summarize_over_seeds(results_df, cfg.calibration.measurements)
-
-            print(summary_results_df.head())
-
-            summary_results_df = summarize_over_dimensions(summary_results_df, cfg.calibration.measurements)
-
-            print(summary_results_df.head())
-
-            summary_results_df = summmrize_over_datasets(summary_results_df, cfg.calibration.measurements)  # this is the mean performance for each config over each projector
-
-            print(summary_results_df.head())
+            logger.info('')
+            logger.info(f'Projector Config Summary for {projector.name}')
+            logger.info(f'\n{summary_df}')
 
             # save over the results
             output_path = paths.run(run_id).calibration().projector(projector.name)
             output_path.mkdir()
             logger.info(f'Saving results to {output_path.root}')
-            results_df.to_csv(output_path.seed_scores(), index=False)
-            summary_results_df.to_csv(output_path.scores(), index=False)
+            results_df.to_csv(output_path.scores(), index=False)
+            summary_df.to_csv(output_path.summary(), index=False)
 
             # now we have the mean performance of each projector hyperparameter config
+            best_param_idx = summary_df.iloc[0].params_idx
+            best_params = param_grid[best_param_idx]
+            with open(output_path.best_params(), "w") as f:
+                json.dump(best_params, f, indent=2)
 
-
-            # # find the best hyper parameters and save them to json
-            # #   compute the mean for each hyperparameter over each dimension and dataset
-            # #       note that we are not doing a per dataset fit
-            # #   find the best one
-            # #   save to json
-            # mean_per_hyperparams = projector_results_df.groupby("params_idx")[cfg.calibration.select].mean()
-            # best_params_idx = mean_per_hyperparams.idxmax()
-            # best_row = projector_results_df[projector_results_df["params_idx"] == best_params_idx].iloc[0]
-            # best_row_json = best_row.to_dict()
-            # with open(output_path / "best_params.json", "w") as f:
-            #     json.dump(best_row_json, f, indent=2)
-
-            # logger.info(f"The best hyperparameters for the {projector.name} projector were:")
-            # logger.info(best_row_json)
+            logger.info(f"The best hyperparameters for the {projector.name} projector were:")
+            logger.info(best_params)
 
         elapsed_time = perf_counter() - start_time
         logger.info(f"Total time: {elapsed_time:.2f} seconds")
