@@ -25,6 +25,9 @@ calibration:
     - name: silhouette-score
       params:
         {}
+    - name: trustworthiness
+      params:
+        {}
   projectors:
     - name: pca
       params:
