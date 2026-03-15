@@ -18,6 +18,7 @@ from hproj.measure.measurement import Measurement, MeasurementFactory
 from hproj.projectors.projector import Projector, ProjectorFactory
 from hproj.util.atomic import atomic_write_json
 from hproj.util.config import Config, MeasurementConfig
+from hproj.util.dask import make_dask_client
 from hproj.util.hyperparams import make_param_grid
 from hproj.util.logging import setup_logging
 from hproj.util.runs import generate_run_id
@@ -85,13 +86,6 @@ def score_projector_config_task(
     }
     return meta_data | proj_hyperparams | scores
 
-
-def make_dask_client():
-    cluster = LocalCUDACluster(
-        threads_per_worker=1,
-    )
-    client = Client(cluster)
-    return client, cluster
 
 
 def make_task_key(projector: str, dataset: str, n_components: int, 
@@ -209,7 +203,7 @@ def calibrate_projector(config: Path, run_id: str):
 
     # set up the logger
     logger = setup_logging(paths.run(run_id).log_file())
-    logger.info("Running the calibration step of the experiment.")
+    logger.info("Running the calibrate projector step of the experiment.")
     logger.info(f"Run id is {run_id}.")
 
     # load in the datasets training split
@@ -261,7 +255,6 @@ def calibrate_projector(config: Path, run_id: str):
             logger.info(f"Generated {len(param_grid)} hyperparameter configs.")
 
             # we want the calibration for each projector over all datasets
-            seed_level_results = []
             for dataset_name, embeddings in train_embeddings.items():
                 logger.info(f"Evaluating projector {projector.name} on dataset: {dataset_name}")
                 logger.info(f"Number of samples: {embeddings.num_samples()}")
