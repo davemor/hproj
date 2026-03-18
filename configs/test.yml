@@ -7,7 +7,9 @@ encoders:
 
 # paired seeds
 seeds: 
-  calibration: [0, 1]
+  calibration: 
+    projector: [0, 1]
+    classifier: [2, 3]
   curve: [0, 1, 2]
   evaluation: [0, 1, 2, 3, 4]
 
@@ -15,32 +17,37 @@ seeds:
 num_folds: 3
 
 calibration:
-  select: mean-knn-score-mean
-  subsample: 1_000  # subsample each dataset down to 1k (about 1%)
-  dimensions: [2,8]
-  measurements:
-    - name: mean-knn-score
-      params:
-        ks: [5,30]
-    - name: silhouette-score
-      params:
-        {}
-    - name: trustworthiness
-      params:
-        {}
-  projectors:
-    - name: pca
-      params:
-        {}
-    - name: grp
-      params:
-        {}
-    - name: umap
-      params:
-        n_neighbors: [5, 30]
-        min_dist: [0.25, 0.5]
-        metric: [cosine]  # these are image embeddings
-  classifiers:
-    - name: logistic_regression
-      params:
-        C: [0.01, 0.1, 1, 10, 100]
+  projector:
+    select: mean-knn-score-mean
+    subsample: 1000  # subsample each dataset down to 1k (about 1%)
+    dimensions: [2,8]
+    measurements:
+      - name: mean-knn-score
+        params:
+          ks: [5,30]
+      - name: silhouette-score
+        params:
+          {}
+      - name: trustworthiness
+        params:
+          {}
+    projectors:
+      - name: pca
+        params:
+          {}
+      - name: grp
+        params:
+          {}
+      - name: umap
+        params:
+          n_neighbors: [5, 30]
+          min_dist: [0.25, 0.5]
+          metric: [cosine]  # these are image embeddings
+  classifier:
+    select: 'roc_auc'
+    subsample: 1000  # subsample each dataset down to 1k (about 1%)
+    dimensions: [2,8]
+    classifiers:
+      - name: logistic-regression
+        params:
+          C: [0.01, 0.1, 1, 10, 100]

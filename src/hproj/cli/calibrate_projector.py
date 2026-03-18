@@ -208,7 +208,7 @@ def calibrate_projector(config: Path, run_id: str):
 
     # stratified subsample to the amount specifier in the config if required
     # this is done on the training embeddings before the folds are generated
-    num_subsamples = cfg.calibration.subsample
+    num_subsamples = cfg.calibration.projector.subsample
     if num_subsamples:
         train_embeddings = {
             name: embeddings.stratified_sample(num_subsamples)
@@ -232,7 +232,7 @@ def calibrate_projector(config: Path, run_id: str):
         # timings
         start_time = perf_counter()
 
-        for projector in cfg.calibration.projectors:
+        for projector in cfg.calibration.projector.projectors:
             logger.info(f"Evaluating projector: {projector.name}")
             logger.info(f"Hyperparams: {projector.params}")
             if len(projector.params) == 0:
@@ -258,9 +258,9 @@ def calibrate_projector(config: Path, run_id: str):
 
                 embeddings_future = client.scatter(embeddings, broadcast=True)
                 folds = dataset_folds[dataset_name]
-                base_seeds = cfg.seeds.calibration
+                base_seeds = cfg.seeds.calibration.projector
 
-                for n_components in cfg.calibration.dimensions:
+                for n_components in cfg.calibration.projector.dimensions:
                     pending_tasks = {}  # future: task_file
                     for params_idx, projector_hyperparams in enumerate(param_grid):
                         for base_seed in base_seeds:
@@ -281,7 +281,7 @@ def calibrate_projector(config: Path, run_id: str):
                                 dataset_name,
                                 projector.name,
                                 projector_hyperparams,
-                                cfg.calibration.measurements,
+                                cfg.calibration.projector.measurements,
                                 n_components,
                                 base_seed,
                                 folds,
@@ -306,8 +306,9 @@ def calibrate_projector(config: Path, run_id: str):
             summary_df = summaries_results_for_projector(
                 results_df,
                 "mean-knn-score",
-                [m.name for m in cfg.calibration.measurements],
+                [m.name for m in cfg.calibration.projector.measurements],
             )
+        
             summary_df = attach_projector_params_from_grid(summary_df, param_grid)
 
             logger.info("")

@@ -131,7 +131,7 @@ class CalibrationPaths(OutputPath):
         return ProjectorCalibrationPaths(self.root / 'projectors' / f"{projctor_name}")
     
     def classifier(self, classifier_name: str):
-        return self.root / 'classifier' / f"{classifier_name}"
+        return ClassifierCalibrationPaths(self.root / 'classifier' / f"{classifier_name}")
     
 
 @dataclass
@@ -160,3 +160,20 @@ class TasksDir(OutputPath):
     
     def glob_tasks(self) -> list[Path]:
         return list(self.root.glob('*.json'))
+    
+
+@dataclass
+class ClassifierCalibrationPaths(OutputPath):
+    root: Path
+    
+    def tasks(self) -> 'TasksDir':
+        return TasksDir(self.root / 'tasks')
+    
+    def scores(self) -> Path:
+        return self.root / 'seed_scores.csv'
+    
+    def summary(self) -> Path:
+        return self.root / 'scores.csv'
+    
+    def best_params(self) -> Path:
+        return self.root / 'best_params.json'

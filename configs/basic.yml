@@ -13,7 +13,9 @@ encoders:
 
 # paired seeds
 seeds: 
-  calibration: [0, 1]
+  calibration: 
+    projector: [0, 1]
+    classifier: [2, 3]
   curve: [0, 1, 2]
   evaluation: [0, 1, 2, 3, 4]
 

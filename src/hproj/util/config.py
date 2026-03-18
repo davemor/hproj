@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 import yaml
 
@@ -11,8 +11,7 @@ class MeasurementConfig:
     params: dict[str, Any] = field(default_factory=dict)
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "ProjectorConfig":
-        # simply unpack the dictionary; the constructor provides defaults
+    def from_dict(cls, data: dict[str, Any]) -> "MeasurementConfig":
         return cls(**data)
 
 
@@ -23,51 +22,105 @@ class ProjectorConfig:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "ProjectorConfig":
-        # simply unpack the dictionary; the constructor provides defaults
         return cls(**data)
 
 
 @dataclass
 class ClassifierConfig:
     name: str
-    paras: dict[str, Any] = field(default_factory=dict)
+    params: dict[str, Any] = field(default_factory=dict)
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "ClassifierConfig":
-        # simply unpack the dictionary; the constructor provides defaults
         return cls(**data)
 
+
+@dataclass
+class ProjectorCalibrationConfig:
+    select: Optional[str] = None
+    subsample: Optional[int] = None
+    dimensions: list[int] = field(default_factory=list)
+    measurements: list[MeasurementConfig] = field(default_factory=list)
+    projectors: list[ProjectorConfig] = field(default_factory=list)
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "ProjectorCalibrationConfig":
+        data = dict(data)
+
+        if "measurements" in data:
+            data["measurements"] = [
+                MeasurementConfig.from_dict(m) for m in data["measurements"]
+            ]
+
+        if "projectors" in data:
+            data["projectors"] = [
+                ProjectorConfig.from_dict(p) for p in data["projectors"]
+            ]
+
+        return cls(**data)
+
+
+@dataclass
+class ClassifierCalibrationConfig:
+    metrics: list[str] = field(default_factory=list)
+    select: Optional[str] = None
+    subsample: Optional[int] = None
+    dimensions: list[int] = field(default_factory=list)
+    classifiers: list[ClassifierConfig] = field(default_factory=list)
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "ClassifierCalibrationConfig":
+        data = dict(data)
+
+        if "classifiers" in data:
+            data["classifiers"] = [
+                ClassifierConfig.from_dict(c) for c in data["classifiers"]
+            ]
+
+        return cls(**data)
 
 
 @dataclass
 class CalibrationConfig:
-    dimensions: list[int] = field(default_factory=list)
-    measurements: list[MeasurementConfig] = field(default_factory=list)
-    classifiers: list[ClassifierConfig] = field(default_factory=list)
-    projectors: list[ProjectorConfig] = field(default_factory=list)
-    subsample: int = None
-    select: str = None
+    projector: ProjectorCalibrationConfig = field(default_factory=ProjectorCalibrationConfig)
+    classifier: ClassifierCalibrationConfig = field(default_factory=ClassifierCalibrationConfig)
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "CalibrationConfig":
-        # convert nested projectors and unpack
-        if "projectors" in data:
-            data['projectors'] = [ProjectorConfig.from_dict(p) for p in data["projectors"]]
-        if "measurements" in data:
-            data['measurements'] = [MeasurementConfig.from_dict(p) for p in data["measurements"]]
-        if "classifiers" in data:
-            data['classifiers'] = [ClassifierConfig.from_dict(p) for p in data["classifiers"]]
+        data = dict(data)
+
+        if "projector" in data:
+            data["projector"] = ProjectorCalibrationConfig.from_dict(data["projector"])
+
+        if "classifier" in data:
+            data["classifier"] = ClassifierCalibrationConfig.from_dict(data["classifier"])
+
+        return cls(**data)
+
+
+@dataclass
+class CalibrationSeedConfig:
+    projector: list[int] = field(default_factory=list)
+    classifier: list[int] = field(default_factory=list)
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "CalibrationSeedConfig":
         return cls(**data)
 
 
 @dataclass
 class SeedConfig:
-    calibration: list[int] = field(default_factory=list)
+    calibration: CalibrationSeedConfig = field(default_factory=CalibrationSeedConfig)
     curve: list[int] = field(default_factory=list)
     evaluation: list[int] = field(default_factory=list)
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "SeedConfig":
+        data = dict(data)
+
+        if "calibration" in data:
+            data["calibration"] = CalibrationSeedConfig.from_dict(data["calibration"])
+
         return cls(**data)
 
 
@@ -77,32 +130,22 @@ class Config:
     encoders: list[str] = field(default_factory=list)
     seeds: SeedConfig = field(default_factory=SeedConfig)
     num_folds: int = 5
-
     calibration: CalibrationConfig = field(default_factory=CalibrationConfig)
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "Config":
-        if "calibration" in data:
-            calibration_dict = data["calibration"]
-            data = {
-                **data,
-                "calibration": CalibrationConfig.from_dict(calibration_dict),
-            }
+        data = dict(data)
+
         if "seeds" in data:
-            seeds_dict = data["seeds"]
-            data = {**data, "seeds": SeedConfig.from_dict(seeds_dict)}
+            data["seeds"] = SeedConfig.from_dict(data["seeds"])
+
+        if "calibration" in data:
+            data["calibration"] = CalibrationConfig.from_dict(data["calibration"])
+
         return cls(**data)
 
     @classmethod
     def from_yaml(cls, path: Path | str) -> "Config":
-        """Load a configuration from a YAML file or string path.
-
-        Args:
-            path: file path to the YAML config.
-
-        Returns:
-            Config: populated dataclass hierarchy.
-        """
         with open(path, "r") as f:
             data = yaml.safe_load(f)
         return cls.from_dict(data)

@@ -9,11 +9,21 @@ class Classifier(abc.ABC):
     # projectors take seed, **args
 
     @abc.abstractmethod
-    def fit(self, space: FeatureSpace):
+    def fit(self, train: FeatureSpace):
         pass
 
+    def predict(self, evaluate: FeatureSpace) -> cp.ndarray:
+        y_score = self.predict_proba(evaluate)
+        y_pred = y_score.argmax(axis=1)
+        return y_pred
+
+    def predict_and_score(self, evaluate: FeatureSpace) -> tuple[cp.ndarray, cp.ndarray]:
+        y_scores = self.predict_proba(evaluate)
+        y_pred = y_scores.argmax(axis=1)
+        return y_pred, y_scores
+
     @abc.abstractmethod
-    def predict(self, space: FeatureSpace) -> cp.ndarray:
+    def predict_proba(self, evaluate: FeatureSpace) -> cp.ndarray:
         pass
 
 
