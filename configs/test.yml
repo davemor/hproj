@@ -40,7 +40,7 @@ calibration:
         n_neighbors: [5, 30]
         min_dist: [0.25, 0.5]
         metric: [cosine]  # these are image embeddings
-  # classifiers:
-  #   - name: logistic_regression
-  #     params:
-  #       C: [0.01, 0.1, 1, 10, 100]
+  classifiers:
+    - name: logistic_regression
+      params:
+        C: [0.01, 0.1, 1, 10, 100]

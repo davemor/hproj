@@ -1,20 +1,41 @@
+from asyncio import as_completed
 from dataclasses import dataclass
 from itertools import product
 from time import perf_counter
 
 import click
+import tqdm
 
 from hproj.data.folds import generate_stratified_folds
 from hproj.data.paths import Paths
+from hproj.util.atomic import atomic_write_json
 from hproj.util.config import Config
 from hproj.util.dask import make_dask_client
+from hproj.util.hyperparams import make_param_grid
 from hproj.util.logging import setup_logging
 
 
 @dataclass
 class TaskDescription:
+    classifier_name: str
+    classifier_params: str
+    dataset: str
+    n_components: int
+    seed: int
     projector_name: str
     projector_param: dict
+    params_idx: int
+
+    def key(self):
+        return (
+            f"{self.classifer_name}_{self.dataset}_c{self.n_components}"
+            f"_hp{self.params_idx}_s{self.seed}_p{self.projector_name}"
+        )
+
+
+def score_classifier_task(embeddings_future, task_desc: TaskDescription, folds):
+    # in the task, run all the classifiers and compute all the classification metrics
+
     
 
 
@@ -69,8 +90,9 @@ def calibrate_classifier(run_id: str):
 
     projector_cfgs = []
     for projector in cfg.calibration.projectors:
-        # load the projector configuration
-
+        # load the optimal projector config from the projector calibration
+        best_params = paths.run(run_id).calibration().projector(projector.name).best_params()
+        projector_cfgs.append((projector.name, best_params))
 
 
     try:
@@ -78,26 +100,64 @@ def calibrate_classifier(run_id: str):
         start_time = perf_counter()
 
         # for each classifier
+        for classifier in cfg.calibration.classifiers:
+            logger.info(f"Evaluating classifier: {classifier.name}")
+            logger.info(f"Hyperparams: {classifier.params}")
+            if len(classifier.params) == 0:
+                logger.info("No hyperparameters to tune, skipping.")
+                continue
 
-            # generate a hyperparameter grid
+            # setup the output path for the projectors calibration data
+            output_path = paths.run(run_id).calibration().classifier(classifier.name)
+            output_path.mkdir()
+            tasks_dir = output_path.tasks()
+            tasks_dir.mkdir()
 
-            # generate the task descriptions
+            # geneate the hyperparameter grid for this projector
+            param_grid = make_param_grid(classifier.params)
+            logger.info(f"Generated {len(param_grid)} hyperparameter configs.")
 
             # for each projector (using the fixed configuration from earlier)
+            for projector_name, projector_config in projector_cfgs:
 
-                    # for each dataset
+                # for each dataset
+                for dataset_name, embeddings in train_embeddings.items():
+                    logger.info(f"Evaluating projector {projector.name} on dataset: {dataset_name}")
+                    logger.info(f"Number of samples: {embeddings.num_samples()}")    
 
-                        # for each dimension
+                    embeddings_future = client.scatter(embeddings, broadcast=True)
+                    folds = dataset_folds[dataset_name]
+                    base_seeds = cfg.seeds.calibration
 
-                            # for each seed
+                    # for each dimension
+                    for n_components in cfg.calibration.dimensions:
+                        pending_tasks = {}  # future: task_file
+                        for params_idx, classifier_params in enumerate(param_grid):
+                            for base_seed in base_seeds:
+                                # create a task description
+                                task_desc = TaskDescription(classifier.name, classifier.params, dataset_name, 
+                                                            n_components, base_seed, projector_name, projector_config, 
+                                                            params_idx)
 
-                                # for each configuration of hyperparameters
+                                task_file = tasks_dir.task(task_desc.key())
+                                if task_file.exists():
+                                    continue
 
-                                        # create a task specification
+                                future = client.submit(
+                                    score_classifier_config_task,
+                                    embeddings_future,
+                                    task_desc,
+                                    folds,
+                                    pure=False)
+                                
+                                pending_tasks[future] = task_file
+                        
 
-            # submit all the task specifications
-
-                # in the task, run all the classifiers and compute all the classification metrics
+                        desc = f"{classifier.name} | {dataset_name} | d={n_components}"
+                        for future in tqdm(as_completed(pending_tasks.keys()), total=len(pending_tasks), desc=desc):
+                            results = future.result()
+                            task_file = pending_tasks[future]
+                            atomic_write_json(task_file, results)
 
             # put the results in a data frame and save it
 

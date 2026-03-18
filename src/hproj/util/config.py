@@ -28,9 +28,22 @@ class ProjectorConfig:
 
 
 @dataclass
+class ClassifierConfig:
+    name: str
+    paras: dict[str, Any] = field(default_factory=dict)
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "ClassifierConfig":
+        # simply unpack the dictionary; the constructor provides defaults
+        return cls(**data)
+
+
+
+@dataclass
 class CalibrationConfig:
     dimensions: list[int] = field(default_factory=list)
     measurements: list[MeasurementConfig] = field(default_factory=list)
+    classifiers: list[ClassifierConfig] = field(default_factory=list)
     projectors: list[ProjectorConfig] = field(default_factory=list)
     subsample: int = None
     select: str = None
@@ -42,6 +55,8 @@ class CalibrationConfig:
             data['projectors'] = [ProjectorConfig.from_dict(p) for p in data["projectors"]]
         if "measurements" in data:
             data['measurements'] = [MeasurementConfig.from_dict(p) for p in data["measurements"]]
+        if "classifiers" in data:
+            data['classifiers'] = [ClassifierConfig.from_dict(p) for p in data["classifiers"]]
         return cls(**data)
 
 
