@@ -242,6 +242,7 @@ def calibrate_classifier(run_id: str):
     logger = setup_logging(paths.run(run_id).log_file())
     logger.info("Running the classifier calibration step of the experiment.")
     logger.info(f"Run id is {run_id}.")
+    logger.info(f"Run path is {paths.run(run_id).root}")
 
     train_embeddings = {
         f"{dataset}_{encoder}": paths.embedding(dataset, encoder).split("train").load()

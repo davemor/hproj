@@ -1,7 +1,7 @@
 import click
 from dotenv import load_dotenv
 
-from hproj.cli import calibrate_projector, calibrate_classifier, example
+from hproj.cli import calibrate_projector, calibrate_classifier, estimate_curve, example
 
 load_dotenv()
 
@@ -14,7 +14,7 @@ def cli():
 cli.add_command(example)
 cli.add_command(calibrate_projector)
 cli.add_command(calibrate_classifier)
-
+cli.add_command(estimate_curve)
 
 def main():
     cli(prog_name="hproj")

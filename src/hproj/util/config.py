@@ -125,12 +125,33 @@ class SeedConfig:
 
 
 @dataclass
+class CurveConfig:
+    dimensions: list[int]
+    subsample: int
+    projectors: list[str]
+    classifiers: list[str]
+    measurements: list[MeasurementConfig] = field(default=MeasurementConfig)
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "CurveConfig":
+        data = dict(data)
+
+        if "measurements" in data:
+            data["measurements"] = [
+                MeasurementConfig.from_dict(m) for m in data["measurements"]
+            ]
+
+        return cls(**data)
+
+
+@dataclass
 class Config:
     datasets: list[str] = field(default_factory=list)
     encoders: list[str] = field(default_factory=list)
     seeds: SeedConfig = field(default_factory=SeedConfig)
     num_folds: int = 5
     calibration: CalibrationConfig = field(default_factory=CalibrationConfig)
+    curve: CurveConfig = field(default_factory=CurveConfig)
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "Config":
@@ -141,6 +162,9 @@ class Config:
 
         if "calibration" in data:
             data["calibration"] = CalibrationConfig.from_dict(data["calibration"])
+
+        if "curve" in data:
+            data["curve"] = CurveConfig.from_dict(data["curve"])
 
         return cls(**data)
 

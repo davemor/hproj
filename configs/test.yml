@@ -10,8 +10,8 @@ seeds:
   calibration: 
     projector: [0, 1]
     classifier: [2, 3]
-  curve: [0, 1, 2]
-  evaluation: [0, 1, 2, 3, 4]
+  curve: [4, 5]
+  evaluation: [0, 1, 2, 3, 4, 5]
 
 # set the number of folds for cross-validation
 num_folds: 3
@@ -51,3 +51,17 @@ calibration:
       - name: logistic-regression
         params:
           C: [0.01, 0.1, 1, 10, 100]
+
+curve:
+  dimensions: [2,8,16]
+  subsample: 1000
+  projectors: ['pca', 'umap', 'grp']
+  classifiers: ['logistic-regression']
+  measurements:
+    - name: mean-knn-score
+      params:
+        ks: [5,30]
+    - name: silhouette-score
+      params:
+        {}
+    - name: trustworthiness

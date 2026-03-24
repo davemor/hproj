@@ -108,7 +108,6 @@ class EmbeddingsSplitPath:
 # Run Paths - for storing results of a run
 # ============================================================================
 
-
 @dataclass
 class RunPath(OutputPath):
     root: Path
@@ -121,6 +120,9 @@ class RunPath(OutputPath):
 
     def calibration(self):
         return CalibrationPaths(self.root / 'calibration')
+    
+    def curve(self):
+        return CurvePaths(self.root / 'curve')
 
 
 @dataclass
@@ -177,3 +179,25 @@ class ClassifierCalibrationPaths(OutputPath):
     
     def best_params(self) -> Path:
         return self.root / 'best_params.json'
+
+
+@dataclass
+class CurvePaths(OutputPath):
+    root: Path
+
+    def projector_classifier(self, projector: str, classifier: str) -> Path:
+        return CurveProjectorClassifierPaths(self.root / f"{projector}_{classifier}")
+    
+
+@dataclass
+class CurveProjectorClassifierPaths(OutputPath):
+    root: Path
+
+    def results(self) -> Path:
+        return self.root / "results.csv"
+
+    def summary_results(self) -> Path:
+        return self.root / "summary_results.csv"
+
+    def tasks(self) -> Path:
+        return TasksDir(self.root / 'tasks')
