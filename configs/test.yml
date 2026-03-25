@@ -53,7 +53,13 @@ calibration:
           C: [0.01, 0.1, 1, 10, 100]
 
 curve:
-  dimensions: [2,8,16]
+  dimension_intervals:
+    - start: 2
+      stop: 4
+      step: 1
+    - start: 8
+      stop: 10
+      step: 1
   subsample: 1000
   projectors: ['pca', 'umap', 'grp']
   classifiers: ['logistic-regression']

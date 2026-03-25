@@ -1,7 +1,7 @@
 import click
 from dotenv import load_dotenv
 
-from hproj.cli import calibrate_projector, calibrate_classifier, estimate_curve, example
+from hproj.cli import calibrate_classifier, calibrate_projector, estimate_curve, example
 
 load_dotenv()
 

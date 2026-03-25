@@ -14,8 +14,8 @@ encoders:
 # paired seeds
 seeds: 
   calibration: 
-    projector: [0, 1]
-    classifier: [2, 3]
+    projector: [0, 1, 2]
+    classifier: [0, 1, 2]
   curve: [0, 1, 2]
   evaluation: [0, 1, 2, 3, 4]
 
@@ -24,7 +24,8 @@ num_folds: 5
 
 calibration:
   select: mean-knn-score-mean
-  dimensions: [1,2,4,8,16,32,128,256,512,1024]  # note that D is always added
+  subsample: 10000
+  dimensions: [1,2,4,8,16,32,128,256,512,1024]
   measurements:
     - name: mean-knn-score
       params:
@@ -42,7 +43,32 @@ calibration:
         n_neighbors: [2, 5, 10, 20, 50, 100, 200]
         min_dist: [0.0, 0.1, 0.25, 0.5, 0.8, 0.99]
         metric: [cosine]  # these are image embeddings
-  # classifiers:
-  #   - name: logistic_regression
-  #     params:
-  #       C: [0.01, 0.1, 1, 10, 100]
+  classifier:
+    select: 'accuracy'
+    subsample: 10000
+    dimensions: [2,8]
+    classifiers:
+      - name: logistic-regression
+        params:
+          C: [0.01, 0.1, 1, 10, 100]
+
+curve:
+  dimensions: []
+  dimesion_intervals:
+    - start: 1
+      stop: 32
+      step: 1
+    - start: 32
+      stop: D
+      step: 50
+  subsample: 10000
+  projectors: ['pca', 'umap', 'grp']
+  classifiers: ['logistic-regression']
+  measurements:
+    - name: mean-knn-score
+      params:
+        ks: [5,30]
+    - name: silhouette-score
+      params:
+        {}
+    - name: trustworthiness

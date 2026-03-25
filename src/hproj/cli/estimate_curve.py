@@ -1,11 +1,14 @@
+import json
 from collections import defaultdict
 from dataclasses import dataclass
 from itertools import product
-import json
+from pathlib import Path
 from statistics import mean
 from time import perf_counter
 
 import click
+import matplotlib.pyplot as plt
+import pandas as pd
 from dask.distributed import as_completed
 from tqdm import tqdm
 
@@ -48,27 +51,77 @@ def load_best_params(path, logger, name):
 
 
 def build_projector_configs(cfg, paths, run_id, logger):
-    configs = []
-    for name in cfg.curve.projectors:
-        params = load_best_params(
-            paths.run(run_id).calibration().projector(name).best_params(),
-            logger,
-            name,
+    return [
+        ProjectorConfig(
+            name=name,
+            params=load_best_params(
+                paths.run(run_id).calibration().projector(name).best_params(),
+                logger,
+                name,
+            ),
         )
-        configs.append(ProjectorConfig(name=name, params=params))
-    return configs
+        for name in cfg.curve.projectors
+    ]
 
 
 def build_classifier_configs(cfg, paths, run_id, logger):
-    configs = []
-    for name in cfg.curve.classifiers:
-        params = load_best_params(
-            paths.run(run_id).calibration().classifier(name).best_params(),
-            logger,
-            name,
+    return [
+        ClassifierConfig(
+            name=name,
+            params=load_best_params(
+                paths.run(run_id).calibration().classifier(name).best_params(),
+                logger,
+                name,
+            ),
         )
-        configs.append(ClassifierConfig(name=name, params=params))
-    return configs
+        for name in cfg.curve.classifiers
+    ]
+
+
+def plot_metric_with_error_bars(
+    df,
+    metric: str,
+    output_path,
+    x_col: str = "n_components",
+    group_col: str = "projector",
+    y_col: str | None = None,
+    err_col: str | None = None,
+    title: str | None = None,
+):
+    y_col = y_col or f"{metric}_seed_mean_dataset_mean"
+    err_col = err_col or f"{metric}_seed_mean_dataset_std"
+    output_path = Path(output_path)
+
+    required_cols = {x_col, group_col, y_col, err_col}
+    missing = required_cols - set(df.columns)
+    if missing:
+        raise ValueError(f"Missing required columns: {sorted(missing)}")
+
+    fig, ax = plt.subplots(figsize=(8, 5))
+
+    for group_value, group_df in df.groupby(group_col):
+        group_df = group_df.sort_values(x_col)
+        ax.errorbar(
+            group_df[x_col],
+            group_df[y_col],
+            yerr=group_df[err_col],
+            marker="o",
+            capsize=4,
+            label=str(group_value),
+        )
+
+    ax.set_xlabel(x_col)
+    ax.set_ylabel(metric)
+    ax.set_title(title or f"{metric} vs {x_col}")
+    ax.legend(title=group_col)
+    ax.grid(True, alpha=0.3)
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.tight_layout()
+    fig.savefig(output_path, dpi=200, bbox_inches="tight")
+    plt.close(fig)
+
+    return output_path
 
 
 def score_curve_task(embeddings, task_desc, folds, measurement_cfgs):
@@ -104,12 +157,16 @@ def score_curve_task(embeddings, task_desc, folds, measurement_cfgs):
         valid_proj = projector.transform(valid)
 
         for name, measurement in measurements:
-            fold_scores[name].append(float(measurement(train_proj, valid_proj, train, valid)))
+            fold_scores[name].append(
+                float(measurement(train_proj, valid_proj, train, valid))
+            )
 
         classifier.fit(train_proj)
         y_pred, y_scores = classifier.predict_and_score(valid_proj)
 
-        for name, value in compute_classification_metrics(valid.labels, y_pred, y_scores).items():
+        for name, value in compute_classification_metrics(
+            valid.labels, y_pred, y_scores
+        ).items():
             fold_scores[name].append(float(value))
 
     mean_scores = {
@@ -136,6 +193,7 @@ def aggregate_group(df, cols_group, spec):
     stats = stats.fillna(0.0)
     return stats
 
+
 def aggregate_curve_results_across_seeds(results_df):
     group_cols = ["classifier", "dataset", "projector", "n_components"]
 
@@ -155,14 +213,37 @@ def aggregate_curve_results_across_seeds(results_df):
 
     return aggregate_group(results_df, group_cols, spec)
 
+
+def aggregate_across_datasets(df_seed):
+    group_cols = ["classifier", "projector", "n_components"]
+
+    value_cols = [
+        col
+        for col in df_seed.columns
+        if col not in {*group_cols, "dataset"}
+    ]
+
+    spec = {
+        f"{col}_dataset_mean": (col, "mean")
+        for col in value_cols
+    } | {
+        f"{col}_dataset_std": (col, "std")
+        for col in value_cols
+    }
+
+    return aggregate_group(df_seed, group_cols, spec)
+
+
 @click.command()
 @click.option("--run-id", "-r", type=str, required=True, help="The id of a run to continue.")
 @click.option("--force", is_flag=True, help="Recompute existing task outputs.")
 def estimate_curve(run_id: str, force: bool):
     paths = Paths.from_env()
-    cfg = Config.from_yaml(paths.run(run_id).config())
+    run_paths = paths.run(run_id)
+    curve_paths = run_paths.curve()
+    cfg = Config.from_yaml(run_paths.config())
 
-    logger = setup_logging(paths.run(run_id).log_file())
+    logger = setup_logging(run_paths.log_file())
     logger.info("Running the curve estimation step of the experiment.")
     logger.info(f"Run id is {run_id}.")
     logger.info(f"Force recomputation is {'enabled' if force else 'disabled'}.")
@@ -186,14 +267,20 @@ def estimate_curve(run_id: str, force: bool):
     projector_cfgs = build_projector_configs(cfg, paths, run_id, logger)
     classifier_cfgs = build_classifier_configs(cfg, paths, run_id, logger)
 
+    curve_paths.mkdir()
+    curve_paths.summaries().mkdir()
+    curve_paths.plots().mkdir()
+
     client, cluster = make_dask_client()
 
     try:
         start_time = perf_counter()
 
-        for projector_cfg in projector_cfgs:
-            for classifier_cfg in classifier_cfgs:
-                output_path = paths.run(run_id).curve().projector_classifier(
+        for classifier_cfg in classifier_cfgs:
+            classifier_results = []
+
+            for projector_cfg in projector_cfgs:
+                output_path = curve_paths.projector_classifier(
                     projector_cfg.name,
                     classifier_cfg.name,
                 )
@@ -241,16 +328,75 @@ def estimate_curve(run_id: str, force: bool):
                         atomic_write_json(pending_tasks[future], future.result())
 
                 results_df = load_task_results(output_path.tasks())
-                results_df.to_csv(output_path.results())
+                classifier_results.append(results_df)
+
+                results_df.to_csv(output_path.results(), index=False)
                 logger.info(f"Writing results csv to {output_path.results()}")
 
-                summary_results_df = aggregate_curve_results_across_seeds(results_df)
-                summary_results_df.to_csv(output_path.results())
-                logger.info(f"Writing summary results csv to {output_path.summary_results()}")   
+                seed_summary_df = aggregate_curve_results_across_seeds(results_df)
+                seed_summary_df.to_csv(output_path.seed_summary_results(), index=False)
+                logger.info(
+                    f"Writing summary results csv to {output_path.seed_summary_results()}"
+                )
+
+                dataset_summary_df = aggregate_across_datasets(seed_summary_df)
+                dataset_summary_df.to_csv(output_path.dataset_summary_results(), index=False)
+                logger.info(
+                    f"Writing summary results csv to {output_path.dataset_summary_results()}"
+                )
+
+            classifier_results_df = pd.concat(classifier_results, ignore_index=True)
+
+            classifier_seed_summary_df = aggregate_curve_results_across_seeds(
+                classifier_results_df
+            )
+            classifier_dataset_summary_df = aggregate_across_datasets(
+                classifier_seed_summary_df
+            )
+
+            classifier_seed_summary_path = curve_paths.summaries().classifier_seed_summary(
+                classifier_cfg.name
+            )
+            classifier_dataset_summary_path = (
+                curve_paths.summaries().classifier_dataset_summary(classifier_cfg.name)
+            )
+
+            classifier_seed_summary_df.to_csv(classifier_seed_summary_path, index=False)
+            classifier_dataset_summary_df.to_csv(
+                classifier_dataset_summary_path, index=False
+            )
+
+            logger.info(f"Writing classifier seed summary to {classifier_seed_summary_path}")
+            logger.info(
+                f"Writing classifier dataset summary to {classifier_dataset_summary_path}"
+            )
+
+            accuracy_plot_path = curve_paths.plots().classifier_accuracy(
+                classifier_cfg.name
+            )
+            roc_auc_plot_path = curve_paths.plots().classifier_roc_auc(
+                classifier_cfg.name
+            )
+
+            plot_metric_with_error_bars(
+                df=classifier_dataset_summary_df,
+                metric="accuracy",
+                output_path=accuracy_plot_path,
+                title=f"{classifier_cfg.name}: accuracy vs n_components",
+            )
+            logger.info(f"Wrote accuracy plot to {accuracy_plot_path}")
+
+            plot_metric_with_error_bars(
+                df=classifier_dataset_summary_df,
+                metric="roc_auc",
+                output_path=roc_auc_plot_path,
+                title=f"{classifier_cfg.name}: roc_auc vs n_components",
+            )
+            logger.info(f"Wrote roc_auc plot to {roc_auc_plot_path}")
 
         elapsed_time = perf_counter() - start_time
         logger.info(f"Total time: {elapsed_time:.2f} seconds")
-        logger.info(f"Run output saved to: {paths.run(run_id).root}")
+        logger.info(f"Run output saved to: {run_paths.root}")
 
     finally:
         client.close()

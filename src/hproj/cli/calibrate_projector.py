@@ -7,8 +7,7 @@ from time import perf_counter
 
 import click
 import pandas as pd
-from dask.distributed import Client, as_completed
-from dask_cuda import LocalCUDACluster
+from dask.distributed import as_completed
 from tqdm.auto import tqdm
 
 from hproj.data.feature_space import FeatureSpace

@@ -125,12 +125,28 @@ class SeedConfig:
 
 
 @dataclass
+class IntervalConfig:
+    start: int
+    stop: int
+    step: int
+
+    @classmethod
+    def from_dict(cls, d):
+        return cls(**d)
+
+    def as_range(self):
+        return range(self.start, self.stop, self.step)
+
+
+@dataclass
 class CurveConfig:
     dimensions: list[int]
     subsample: int
     projectors: list[str]
     classifiers: list[str]
     measurements: list[MeasurementConfig] = field(default=MeasurementConfig)
+    dimension_intervals: Optional[list[tuple[int]]] = None
+
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "CurveConfig":
@@ -140,6 +156,17 @@ class CurveConfig:
             data["measurements"] = [
                 MeasurementConfig.from_dict(m) for m in data["measurements"]
             ]
+
+        if "dimension_intervals" in data:
+            data["dimension_intervals"] = [
+                IntervalConfig.from_dict(i) for i in data['dimension_intervals']
+            ]
+
+            list_of_ranges = [
+                list(i.as_range()) 
+                for i in data["dimension_intervals"]
+            ]
+            data['dimensions'] = [r for rs in list_of_ranges for r in rs]
 
         return cls(**data)
 

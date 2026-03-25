@@ -21,7 +21,6 @@ from hproj.util.hyperparams import make_param_grid
 from hproj.util.logging import setup_logging
 from hproj.util.seeds import make_seed
 
-
 METRICS = ["accuracy", "roc_auc"]
 
 

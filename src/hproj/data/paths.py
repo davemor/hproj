@@ -42,10 +42,6 @@ class Paths:
 
 # ============================================================================
 # Embedding Paths
-#
-# Example use:
-#   paths = Path.from_env()
-#   k100k_train = paths.embedding("kather100k", "uni").split("train").load()
 # ============================================================================
 
 
@@ -87,107 +83,113 @@ class EmbeddingsSplitPath:
         return self.root / f"paths_{shard}.json"
 
     def glob_embs(self) -> list[Path]:
-        pattern = "emb_[0-9][0-9][0-9][0-9].pt"
-        return list(self.root.glob(pattern))
+        return list(self.root.glob("emb_[0-9][0-9][0-9][0-9].pt"))
 
     def glob_labels(self) -> list[Path]:
-        pattern = "labels_[0-9][0-9][0-9][0-9].pt"
-        return list(self.root.glob(pattern))
+        return list(self.root.glob("labels_[0-9][0-9][0-9][0-9].pt"))
 
     def glob_paths_json(self) -> list[Path]:
-        pattern = "paths_[0-9][0-9][0-9][0-9].json"
-        return list(self.root.glob(pattern))
+        return list(self.root.glob("paths_[0-9][0-9][0-9][0-9].json"))
 
-    # non path related helper method
     def load(self) -> "FeatureSpace":
         from hproj.data.feature_space import load_embeddings
+
         return load_embeddings(self)
 
 
 # ============================================================================
-# Run Paths - for storing results of a run
+# Run Paths
 # ============================================================================
+
 
 @dataclass
 class RunPath(OutputPath):
     root: Path
 
     def config(self) -> Path:
-        return self.root / 'config.yml'
+        return self.root / "config.yml"
 
     def log_file(self) -> Path:
-        return self.root / 'log.txt'
+        return self.root / "log.txt"
 
-    def calibration(self):
-        return CalibrationPaths(self.root / 'calibration')
-    
-    def curve(self):
-        return CurvePaths(self.root / 'curve')
+    def calibration(self) -> "CalibrationPaths":
+        return CalibrationPaths(self.root / "calibration")
+
+    def curve(self) -> "CurvePaths":
+        return CurvePaths(self.root / "curve")
 
 
 @dataclass
 class CalibrationPaths(OutputPath):
     root: Path
 
-    def projector(self, projctor_name: str):
-        return ProjectorCalibrationPaths(self.root / 'projectors' / f"{projctor_name}")
-    
-    def classifier(self, classifier_name: str):
-        return ClassifierCalibrationPaths(self.root / 'classifier' / f"{classifier_name}")
-    
+    def projector(self, projector_name: str) -> "ProjectorCalibrationPaths":
+        return ProjectorCalibrationPaths(self.root / "projectors" / projector_name)
+
+    def classifier(self, classifier_name: str) -> "ClassifierCalibrationPaths":
+        return ClassifierCalibrationPaths(self.root / "classifier" / classifier_name)
+
 
 @dataclass
 class ProjectorCalibrationPaths(OutputPath):
     root: Path
-    
-    def tasks(self) -> 'TasksDir':
-        return TasksDir(self.root / 'tasks')
-    
+
+    def tasks(self) -> "TasksDir":
+        return TasksDir(self.root / "tasks")
+
     def scores(self) -> Path:
-        return self.root / 'seed_scores.csv'
-    
+        return self.root / "seed_scores.csv"
+
     def summary(self) -> Path:
-        return self.root / 'scores.csv'
-    
+        return self.root / "scores.csv"
+
     def best_params(self) -> Path:
-        return self.root / 'best_params.json'
+        return self.root / "best_params.json"
+
+
+@dataclass
+class ClassifierCalibrationPaths(OutputPath):
+    root: Path
+
+    def tasks(self) -> "TasksDir":
+        return TasksDir(self.root / "tasks")
+
+    def scores(self) -> Path:
+        return self.root / "seed_scores.csv"
+
+    def summary(self) -> Path:
+        return self.root / "scores.csv"
+
+    def best_params(self) -> Path:
+        return self.root / "best_params.json"
 
 
 @dataclass
 class TasksDir(OutputPath):
     root: Path
 
-    def task(self, key) -> Path:
+    def task(self, key: str) -> Path:
         return self.root / f"{key}.json"
-    
-    def glob_tasks(self) -> list[Path]:
-        return list(self.root.glob('*.json'))
-    
 
-@dataclass
-class ClassifierCalibrationPaths(OutputPath):
-    root: Path
-    
-    def tasks(self) -> 'TasksDir':
-        return TasksDir(self.root / 'tasks')
-    
-    def scores(self) -> Path:
-        return self.root / 'seed_scores.csv'
-    
-    def summary(self) -> Path:
-        return self.root / 'scores.csv'
-    
-    def best_params(self) -> Path:
-        return self.root / 'best_params.json'
+    def glob_tasks(self) -> list[Path]:
+        return list(self.root.glob("*.json"))
 
 
 @dataclass
 class CurvePaths(OutputPath):
     root: Path
 
-    def projector_classifier(self, projector: str, classifier: str) -> Path:
+    def projector_classifier(
+        self, projector: str, classifier: str
+    ) -> "CurveProjectorClassifierPaths":
         return CurveProjectorClassifierPaths(self.root / f"{projector}_{classifier}")
-    
+
+    def summaries(self) -> "CurveSummaryPaths":
+        return CurveSummaryPaths(self.root / "summaries")
+
+    def plots(self) -> "CurvePlotPaths":
+        return CurvePlotPaths(self.root / "plots")
+
 
 @dataclass
 class CurveProjectorClassifierPaths(OutputPath):
@@ -196,8 +198,39 @@ class CurveProjectorClassifierPaths(OutputPath):
     def results(self) -> Path:
         return self.root / "results.csv"
 
-    def summary_results(self) -> Path:
-        return self.root / "summary_results.csv"
+    def seed_summary_results(self) -> Path:
+        return self.root / "seed_summary_results.csv"
 
-    def tasks(self) -> Path:
-        return TasksDir(self.root / 'tasks')
+    def dataset_summary_results(self) -> Path:
+        return self.root / "dataset_summary_results.csv"
+
+    def tasks(self) -> "TasksDir":
+        return TasksDir(self.root / "tasks")
+
+    def accuracy_plot(self) -> Path:
+        return self.root / "accuracy_plot.pdf"
+
+    def roc_auc_plot(self) -> Path:
+        return self.root / "roc_auc_plot.pdf"
+
+
+@dataclass
+class CurveSummaryPaths(OutputPath):
+    root: Path
+
+    def classifier_seed_summary(self, classifier: str) -> Path:
+        return self.root / f"{classifier}_seed_summary.csv"
+
+    def classifier_dataset_summary(self, classifier: str) -> Path:
+        return self.root / f"{classifier}_dataset_summary.csv"
+
+
+@dataclass
+class CurvePlotPaths(OutputPath):
+    root: Path
+
+    def classifier_accuracy(self, classifier: str) -> Path:
+        return self.root / f"{classifier}_accuracy.pdf"
+
+    def classifier_roc_auc(self, classifier: str) -> Path:
+        return self.root / f"{classifier}_roc_auc.pdf"
