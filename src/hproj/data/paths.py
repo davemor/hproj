@@ -214,8 +214,11 @@ class CurveProjectorClassifierPaths(OutputPath):
     def roc_auc_plot(self) -> Path:
         return self.root / "roc_auc_plot.pdf"
     
-    def unprojected_scores(self) -> pd.DataFrame:
+    def unprojected_scores(self) -> Path:
         return self.root / 'unprojected_scores.csv'
+
+    def thresholds_results(self) -> Path:
+        return self.root / 'thresholds_results.csv'
 
 
 @dataclass

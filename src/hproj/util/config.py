@@ -175,7 +175,11 @@ class CurveConfig:
 @dataclass
 class ThresholdsConfig:
     metrics: list[str] = field(default_factory=list)
-    conditions: list[float] = field(default_factory=float)
+    conditions: list[float] = field(default_factory=list)
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "ThresholdsConfig":
+        return cls(**data)
 
 @dataclass
 class Config:
@@ -199,6 +203,9 @@ class Config:
 
         if "curve" in data:
             data["curve"] = CurveConfig.from_dict(data["curve"])
+
+        if "thresholds" in data:
+            data["thresholds"] = ThresholdsConfig.from_dict(data["thresholds"])
 
         return cls(**data)
 
