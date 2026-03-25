@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from dotenv import load_dotenv
+import pandas as pd
 
 if TYPE_CHECKING:
     from hproj.data.feature_space import FeatureSpace
@@ -212,6 +213,9 @@ class CurveProjectorClassifierPaths(OutputPath):
 
     def roc_auc_plot(self) -> Path:
         return self.root / "roc_auc_plot.pdf"
+    
+    def unprojected_scores(self) -> pd.DataFrame:
+        return self.root / 'unprojected_scores.csv'
 
 
 @dataclass

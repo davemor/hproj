@@ -145,6 +145,7 @@ class CurveConfig:
     projectors: list[str]
     classifiers: list[str]
     measurements: list[MeasurementConfig] = field(default=MeasurementConfig)
+    include_full_dimension: Optional[bool] = None
     dimension_intervals: Optional[list[tuple[int]]] = None
 
 
@@ -172,6 +173,11 @@ class CurveConfig:
 
 
 @dataclass
+class ThresholdsConfig:
+    metrics: list[str] = field(default_factory=list)
+    conditions: list[float] = field(default_factory=float)
+
+@dataclass
 class Config:
     datasets: list[str] = field(default_factory=list)
     encoders: list[str] = field(default_factory=list)
@@ -179,6 +185,7 @@ class Config:
     num_folds: int = 5
     calibration: CalibrationConfig = field(default_factory=CalibrationConfig)
     curve: CurveConfig = field(default_factory=CurveConfig)
+    thresholds: ThresholdsConfig = field(default_factory=ThresholdsConfig)
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "Config":

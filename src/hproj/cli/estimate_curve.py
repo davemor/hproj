@@ -149,12 +149,30 @@ def score_curve_task(embeddings, task_desc, folds, measurement_cfgs):
         for cfg in measurement_cfgs
     ]
 
+    mean_scores = score_feature_space(embeddings, folds, classifier, measurements, projector)
+
+    metadata = {
+        "classifier": task_desc.classifier_cfg.name,
+        "dataset": task_desc.dataset_name,
+        "projector": task_desc.projector_cfg.name,
+        "n_components": task_desc.n_components,
+        "base_seed": task_desc.base_seed,
+        "seed": seed,
+    }
+
+    return metadata | mean_scores
+
+def score_feature_space(embeddings, folds, classifier, measurements, projector = None):
     fold_scores = defaultdict(list)
 
     for train, valid in embeddings.get_folds(folds):
-        projector.fit(train)
-        train_proj = projector.transform(train)
-        valid_proj = projector.transform(valid)
+        if projector:
+            projector.fit(train)
+            train_proj = projector.transform(train)
+            valid_proj = projector.transform(valid)
+        else:
+            train_proj = train
+            valid_proj = valid
 
         for name, measurement in measurements:
             fold_scores[name].append(
@@ -174,18 +192,39 @@ def score_curve_task(embeddings, task_desc, folds, measurement_cfgs):
         for name, values in fold_scores.items()
         if values
     }
+    
+    return mean_scores
+
+def score_unprojected_embeddings(embeddings, base_seed, classifier_cfg, dataset_name, folds, measurement_cfgs):
+    seed = make_seed(
+        base_seed,
+        "noprojector",
+        classifier_cfg.name,
+        dataset_name,
+        f"{embeddings.num_dimensions()}",
+    )
+
+    classifier = ClassifierFactory.create(
+        classifier_cfg.name,
+        seed,
+        **classifier_cfg.params,
+    )
+    measurements = [
+        (cfg.name, MeasurementFactory.create(cfg.name, seed, **cfg.params))
+        for cfg in measurement_cfgs
+    ]
+
+    mean_scores = score_feature_space(embeddings, folds, classifier, measurements)
 
     metadata = {
-        "classifier": task_desc.classifier_cfg.name,
-        "dataset": task_desc.dataset_name,
-        "projector": task_desc.projector_cfg.name,
-        "n_components": task_desc.n_components,
-        "base_seed": task_desc.base_seed,
+        "classifier": classifier_cfg.name,
+        "dataset": dataset_name,
+        "n_components": embeddings.num_dimensions(),
+        "base_seed": base_seed,
         "seed": seed,
     }
 
     return metadata | mean_scores
-
 
 def aggregate_group(df, cols_group, spec):
     stats = df.groupby(cols_group, dropna=False)
@@ -288,14 +327,25 @@ def estimate_curve(run_id: str, force: bool):
                 tasks_dir = output_path.tasks()
                 tasks_dir.mkdir()
 
+                unprojected_scores_list = []
+
                 for dataset_name, embeddings in train_embeddings.items():
                     folds = dataset_folds[dataset_name]
                     embeddings_future = client.scatter(embeddings, broadcast=True)
                     desc = f"{classifier_cfg.name} | {projector_cfg.name} | {dataset_name}"
 
+                    # optionally - assess at the full number of dimensions (but projected)
+                    dimensions = cfg.curve.dimensions
+                    if cfg.curve.include_full_dimension:
+                        dimensions.append(embeddings.num_dimensions())
+
                     pending_tasks = {}
-                    for n_components in cfg.curve.dimensions:
+
+                    for n_components in dimensions:
                         for base_seed in cfg.seeds.curve:
+                            unprojected_scores = score_unprojected_embeddings(embeddings, base_seed, classifier_cfg, dataset_name, folds, cfg.curve.measurements)
+                            unprojected_scores_list.append(unprojected_scores)
+
                             task_desc = TaskDescription(
                                 projector_cfg=projector_cfg,
                                 classifier_cfg=classifier_cfg,
@@ -326,6 +376,9 @@ def estimate_curve(run_id: str, force: bool):
                         desc=desc,
                     ):
                         atomic_write_json(pending_tasks[future], future.result())
+
+                unprojected_scores_df = pd.DataFrame(unprojected_scores_list)
+                unprojected_scores_df.to_csv(output_path.unprojected_scores())
 
                 results_df = load_task_results(output_path.tasks())
                 classifier_results.append(results_df)

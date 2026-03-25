@@ -60,6 +60,7 @@ curve:
     - start: 8
       stop: 10
       step: 1
+  include_full_dimension: false
   subsample: 1000
   projectors: ['pca', 'umap', 'grp']
   classifiers: ['logistic-regression']
@@ -71,3 +72,7 @@ curve:
       params:
         {}
     - name: trustworthiness
+
+thresholds:
+  metrics: ['accuracy', 'roc_auc']
+  conditions: [0.99, 0.95]
