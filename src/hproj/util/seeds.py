@@ -9,7 +9,7 @@ import torch
 
 def set_seeds(seed: int = 42):
     np.random.seed(seed)
-    cp.random
+    cp.random.seed(seed)
     torch.manual_seed(seed)
     random.seed(seed)
 

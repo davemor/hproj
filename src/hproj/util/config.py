@@ -144,7 +144,7 @@ class CurveConfig:
     subsample: int
     projectors: list[str]
     classifiers: list[str]
-    measurements: list[MeasurementConfig] = field(default=MeasurementConfig)
+    measurements: list[MeasurementConfig] = field(default_factory=list)
     include_full_dimension: Optional[bool] = None
     dimension_intervals: Optional[list[tuple[int]]] = None
 
@@ -182,6 +182,44 @@ class ThresholdsConfig:
         return cls(**data)
 
 @dataclass
+class IntrinsicDimsConfig:
+    method: str = "mle"
+    subsample: Optional[int] = None
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "IntrinsicDimsConfig":
+        return cls(**data)
+
+
+@dataclass
+class GeneralisationConfig:
+    projectors: list[ProjectorConfig] = field(default_factory=list)
+    classifiers: list[ClassifierConfig] = field(default_factory=list)
+    measurements: list[MeasurementConfig] = field(default_factory=list)
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "GeneralisationConfig":
+        data = dict(data)
+
+        if "projectors" in data:
+            data["projectors"] = [
+                ProjectorConfig.from_dict(p) for p in data["projectors"]
+            ]
+
+        if "classifiers" in data:
+            data["classifiers"] = [
+                ClassifierConfig.from_dict(c) for c in data["classifiers"]
+            ]
+
+        if "measurements" in data:
+            data["measurements"] = [
+                MeasurementConfig.from_dict(m) for m in data["measurements"]
+            ]
+
+        return cls(**data)
+
+
+@dataclass
 class Config:
     datasets: list[str] = field(default_factory=list)
     encoders: list[str] = field(default_factory=list)
@@ -190,6 +228,8 @@ class Config:
     calibration: CalibrationConfig = field(default_factory=CalibrationConfig)
     curve: CurveConfig = field(default_factory=CurveConfig)
     thresholds: ThresholdsConfig = field(default_factory=ThresholdsConfig)
+    intrinsic_dims: IntrinsicDimsConfig = field(default_factory=IntrinsicDimsConfig)
+    generalisation: GeneralisationConfig = field(default_factory=GeneralisationConfig)
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "Config":
@@ -206,6 +246,12 @@ class Config:
 
         if "thresholds" in data:
             data["thresholds"] = ThresholdsConfig.from_dict(data["thresholds"])
+
+        if "intrinsic_dims" in data:
+            data["intrinsic_dims"] = IntrinsicDimsConfig.from_dict(data["intrinsic_dims"])
+
+        if "generalisation" in data:
+            data["generalisation"] = GeneralisationConfig.from_dict(data["generalisation"])
 
         return cls(**data)
 

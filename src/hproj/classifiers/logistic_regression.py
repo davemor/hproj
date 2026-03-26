@@ -8,7 +8,7 @@ from hproj.data.feature_space import FeatureSpace
 
 @ClassifierFactory.register('logistic-regression')
 class LogisticRegressionClassifier(Classifier):
-    def __init__(self, seed, C, max_iter, linesearch_max_iter, tol):
+    def __init__(self, seed, C=1.0, max_iter=1000, linesearch_max_iter=50, tol=1e-4):
         # self.seed = logistic regression has a convex loss surface so no seed required
         self.scaler = StandardScaler()
         self.C = C

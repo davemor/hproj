@@ -16,8 +16,8 @@ class UMAPProjector(Projector):
         self.umap = UMAP(
             n_components=self.n_components, random_state=self.seed, **self.kwargs
         )
-        sampled = space.stratified_sample(space.num_samples * self.SUBSAMPLE_RATIO)
-        self.umap.fit(sampled)
+        sampled = space.stratified_sample(int(space.num_samples() * self.SUBSAMPLE_RATIO))
+        self.umap.fit(sampled.features)
 
     def transform(self, space: FeatureSpace) -> FeatureSpace:
         features = self.umap.transform(space.features)

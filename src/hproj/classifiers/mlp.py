@@ -1,8 +1,7 @@
 import cupy as cp
-from cuml import LogisticRegression
 from cuml.preprocessing import StandardScaler
 
-from sklearn.neural_network import MLPClassifier
+from sklearn.neural_network import MLPClassifier as SklearnMLPClassifier
 
 from hproj.classifiers.classifier import Classifier, ClassifierFactory
 from hproj.data.feature_space import FeatureSpace
@@ -20,7 +19,7 @@ class MLPClassifier(Classifier):
                  max_iter: int = 200,
                  early_stopping: bool = False):
         self.scaler = StandardScaler()
-        self.model = MLPClassifier(
+        self.model = SklearnMLPClassifier(
             hidden_layer_sizes=hidden_layer_sizes,
             activation=activation,
             solver=solver,

@@ -1,0 +1,69 @@
+datasets:
+  - kather100k
+
+encoders:
+  - uni2
+
+seeds: 
+  calibration: 
+    projector: [0]
+    classifier: [1]
+  curve: [2]
+  evaluation: [3]
+
+num_folds: 2
+
+calibration:
+  projector:
+    select: mean-knn-score-mean
+    subsample: 500
+    dimensions: [2, 3]
+    measurements:
+      - name: mean-knn-score
+        params:
+          ks: [5]
+    projectors:
+      - name: pca
+        params: {}
+
+  classifier:
+    select: accuracy
+    subsample: 500
+    dimensions: [2, 3]
+    classifiers:
+      - name: logistic-regression
+        params:
+          C: [1.0]
+          max_iter: [200]
+
+curve:
+  dimension_intervals:
+    - start: 2
+      stop: 4
+      step: 1
+  include_full_dimension: false
+  subsample: 500
+  projectors: ['pca']
+  classifiers: ['logistic-regression']
+  measurements:
+    - name: mean-knn-score
+      params:
+        ks: [5]
+
+thresholds:
+  metrics: ['accuracy']
+  conditions: [0.95]
+
+intrinsic_dims:
+  method: mle
+  subsample: 500
+
+generalisation:
+  projectors:
+    - name: pca
+      params: {}
+  classifiers:
+    - name: logistic-regression
+      params:
+        C: [1.0]
+        max_iter: [200]

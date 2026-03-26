@@ -82,27 +82,23 @@ thresholds:
 
 generalisation:
   measurements:
-        - name: mean-knn-score
-          params:
-            ks: [5,30]
-        - name: silhouette-score
-          params:
-            {}
-        - name: trustworthiness
-          params:
-            {}
-      projectors:
-        - name: pca
-          params:
-            {}
-        - name: grp
-          params:
-            {}
-        - name: umap
-          params:
-            n_neighbors: [5, 30]
-            min_dist: [0.25, 0.5]
-            metric: [cosine]  # these are image embeddings
+    - name: mean-knn-score
+      params:
+        ks: [5,30]
+    - name: silhouette-score
+      params: {}
+    - name: trustworthiness
+      params: {}
+  projectors:
+    - name: pca
+      params: {}
+    - name: grp
+      params: {}
+    - name: umap
+      params:
+        n_neighbors: [5, 30]
+        min_dist: [0.25, 0.5]
+        metric: [cosine]  # these are image embeddings
   classifiers:
     - name: logistic-regression
       params:
@@ -112,5 +108,22 @@ generalisation:
         tol: [1.0e-5]
     - name: mlp
       params:
-        
-        
+        hidden_layer_sizes: [[50], [100, 50]]
+        activation: ['relu', 'tanh']
+        solver: ['adam']
+        alpha: [0.0001, 0.001]
+        learning_rate: ['constant']
+        learning_rate_init: [0.001]
+        max_iter: [200]
+        early_stopping: [True]
+    - name: xgboost
+      params:
+        n_estimators: [50, 100, 200]
+        learning_rate: [0.01, 0.3]
+        max_depth: [3, 10]
+        min_child_weight: [1, 8]
+        subsample: [0.6, 1.0]
+        colsample_bytree: [0.6, 1.0]
+        gamma: [0, 0.5]
+        reg_lambda: [0.001, 10.0]
+        reg_alpha: [0.001, 10.0]

@@ -85,7 +85,7 @@ class FeatureSpace:
         self, folds: list[Fold]
     ) -> list[tuple["FeatureSpace", "FeatureSpace"]]:
         if not self.folds_cache and self.folds_arrays is None:
-            self.folds = folds
+            self.folds_arrays = folds
             self.folds_cache = [
                 self._make_fold(train_idx, valid_idx) for train_idx, valid_idx in folds
             ]

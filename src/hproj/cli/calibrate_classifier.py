@@ -234,14 +234,15 @@ def attach_classifier_params_from_grid(
     help="The id of a run to continue.",
     required=True,
 )
-def calibrate_classifier(run_id: str):
+@click.option("--force", is_flag=True, help="Recompute existing task outputs.")
+def calibrate_classifier(run_id: str, force: bool):
     paths = Paths.from_env()
     cfg = Config.from_yaml(paths.run(run_id).config())
 
     logger = setup_logging(paths.run(run_id).log_file())
     logger.info("Running the classifier calibration step of the experiment.")
     logger.info(f"Run id is {run_id}.")
-    logger.info(f"Run path is {paths.run(run_id).root}")
+    logger.info(f"Force recomputation is {'enabled' if force else 'disabled'}.")
 
     train_embeddings = {
         f"{dataset}_{encoder}": paths.embedding(dataset, encoder).split("train").load()
@@ -328,7 +329,7 @@ def calibrate_classifier(run_id: str):
                                 )
 
                                 task_file = tasks_dir.task(task_desc.key())
-                                if task_file.exists():
+                                if task_file.exists() and not force:
                                     continue
 
                                 future = client.submit(

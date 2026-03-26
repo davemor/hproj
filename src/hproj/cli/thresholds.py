@@ -53,13 +53,13 @@ def compute_thresholds(
             'achieved_dim': achieved_dim,
             'achieved_value': achieved_value,
         })
-        print(f"Dataset: {dataset}, Encoder: {encoder}, Metric: {metric}, Baseline: {baseline:.4f}, Threshold: {threshold_value:.4f}, Achieved dim: {achieved_dim}, Achieved value: {achieved_value:.4f}")
     return results
 
 
 @click.command()
 @click.option("--run-id", "-r", type=str, required=True, help="The id of a run to continue.")
-def thresholds(run_id: str):
+@click.option("--force", is_flag=True, help="Recompute existing threshold outputs.")
+def thresholds(run_id: str, force: bool):
     paths = Paths.from_env()
     run_paths = paths.run(run_id)
     curve_paths = run_paths.curve()
@@ -68,6 +68,12 @@ def thresholds(run_id: str):
     logger = setup_logging(run_paths.log_file())
     logger.info("Running the threshold identification phase of the experiment.")
     logger.info(f"Run id is {run_id}.")
+    logger.info(f"Force recomputation is {'enabled' if force else 'disabled'}.")
+
+    thresholds_path = curve_paths.root / 'thresholds_results.csv'
+    if thresholds_path.exists() and not force:
+        logger.info(f"Thresholds output already exists at {thresholds_path}, use --force to overwrite.")
+        return
 
     if not cfg.thresholds.metrics:
         logger.info("No thresholds configured, skipping.")

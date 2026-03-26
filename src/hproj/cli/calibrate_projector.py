@@ -177,13 +177,15 @@ def attach_projector_params_from_grid(
 @click.option(
     "--run-id", "-r", type=str, help="The id of a run to continue.", default=None
 )
-def calibrate_projector(config: Path, run_id: str):
+@click.option("--force", is_flag=True, help="Recompute existing task outputs.")
+def calibrate_projector(config: Path, run_id: str, force: bool):
     # set up the run_id
-    assert not (config and run_id), "Use --config for a fresh run and --run-id "
+    assert not (config and run_id), "Use --config for a fresh run and --run-id to continue an existing run."
     paths = Paths.from_env()
     if run_id:
+        run_path = paths.run(run_id)
         cfg = Config.from_yaml(
-            paths.data_root.run(run_id).config()
+            run_path.config()
         )  # load the config from the run dir
     else:
         run_id = generate_run_id("hproj", config)  # create a new run id
@@ -198,6 +200,7 @@ def calibrate_projector(config: Path, run_id: str):
     logger = setup_logging(paths.run(run_id).log_file())
     logger.info("Running the calibrate projector step of the experiment.")
     logger.info(f"Run id is {run_id}.")
+    logger.info(f"Force recomputation is {'enabled' if force else 'disabled'}.")
 
     # load in the datasets training split
     train_embeddings = {
@@ -271,7 +274,7 @@ def calibrate_projector(config: Path, run_id: str):
                                 base_seed,
                             )
                             task_file = tasks_dir.task(task_key)
-                            if task_file.exists():
+                            if task_file.exists() and not force:
                                 continue
 
                             future = client.submit(
