@@ -119,6 +119,9 @@ class RunPath(OutputPath):
     def curve(self) -> "CurvePaths":
         return CurvePaths(self.root / "curve")
 
+    def intrinsic_dims(self) -> Path:
+        return self.root / "intrinsic_dims.csv"
+
 
 @dataclass
 class CalibrationPaths(OutputPath):

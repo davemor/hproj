@@ -51,6 +51,9 @@ calibration:
       - name: logistic-regression
         params:
           C: [0.01, 0.1, 1, 10, 100]
+          max_iter: [2000]
+          linesearch_max_iter: [300]
+          tol: [1.0e-5]
 
 curve:
   dimension_intervals:
@@ -76,3 +79,38 @@ curve:
 thresholds:
   metrics: ['accuracy', 'roc_auc']
   conditions: [0.99, 0.95]
+
+generalisation:
+  measurements:
+        - name: mean-knn-score
+          params:
+            ks: [5,30]
+        - name: silhouette-score
+          params:
+            {}
+        - name: trustworthiness
+          params:
+            {}
+      projectors:
+        - name: pca
+          params:
+            {}
+        - name: grp
+          params:
+            {}
+        - name: umap
+          params:
+            n_neighbors: [5, 30]
+            min_dist: [0.25, 0.5]
+            metric: [cosine]  # these are image embeddings
+  classifiers:
+    - name: logistic-regression
+      params:
+        C: [0.01, 0.1, 1, 10, 100]
+        max_iter: [2000]
+        linesearch_max_iter: [300]
+        tol: [1.0e-5]
+    - name: mlp
+      params:
+        
+        

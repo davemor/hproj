@@ -492,6 +492,7 @@ dependencies = [
     { name = "cuml-cu12", extra = ["dask"] },
     { name = "dotenv" },
     { name = "matplotlib" },
+    { name = "scikit-dimension" },
     { name = "scikit-learn" },
     { name = "tqdm" },
 ]
@@ -507,6 +508,7 @@ requires-dist = [
     { name = "cuml-cu12", extras = ["dask"], specifier = ">=26.2.0" },
     { name = "dotenv", specifier = ">=0.9.9" },
     { name = "matplotlib", specifier = ">=3.10.8" },
+    { name = "scikit-dimension", specifier = ">=0.3.4" },
     { name = "scikit-learn", specifier = ">=1.8.0" },
     { name = "tqdm", specifier = ">=4.67.3" },
 ]
@@ -1660,6 +1662,21 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/28/3a/950367aee7c69027f4f422059227b290ed780366b6aecee5de5039d50fa8/ruff-0.15.5-py3-none-win32.whl", hash = "sha256:732e5ee1f98ba5b3679029989a06ca39a950cced52143a0ea82a2102cb592b74", size = 10551676, upload-time = "2026-03-05T20:06:13.705Z" },
     { url = "https://files.pythonhosted.org/packages/b8/00/bf077a505b4e649bdd3c47ff8ec967735ce2544c8e4a43aba42ee9bf935d/ruff-0.15.5-py3-none-win_amd64.whl", hash = "sha256:821d41c5fa9e19117616c35eaa3f4b75046ec76c65e7ae20a333e9a8696bc7fe", size = 11678972, upload-time = "2026-03-05T20:06:45.379Z" },
     { url = "https://files.pythonhosted.org/packages/fe/4e/cd76eca6db6115604b7626668e891c9dd03330384082e33662fb0f113614/ruff-0.15.5-py3-none-win_arm64.whl", hash = "sha256:b498d1c60d2fe5c10c45ec3f698901065772730b411f164ae270bb6bfcc4740b", size = 10965572, upload-time = "2026-03-05T20:06:16.984Z" },
+]
+
+[[package]]
+name = "scikit-dimension"
+version = "0.3.4"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numba" },
+    { name = "numpy" },
+    { name = "scikit-learn" },
+    { name = "scipy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/51/4f/b6afc9fd5d9571e46b0d99bae2cdca5f05dab95f2cc5a87e32063f9b306b/scikit-dimension-0.3.4.tar.gz", hash = "sha256:cd9f52e698cad7abfca8127e5d24e30afa7ef8a7b38bcbd5ca117035af60cc64", size = 9174261, upload-time = "2024-03-11T18:23:22.469Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ad/2e/8168da51fb50b44909a9f13d9bf831ca8256dd2f36d105db51873b273e2f/scikit_dimension-0.3.4-py3-none-any.whl", hash = "sha256:dd60cb7c7f922934a5a6653b05d20f51046efc434c6872b03b5025915e3eb7c5", size = 66385, upload-time = "2024-03-11T18:23:09.761Z" },
 ]
 
 [[package]]

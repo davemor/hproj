@@ -1,7 +1,7 @@
 import click
 from dotenv import load_dotenv
 
-from hproj.cli import calibrate_classifier, calibrate_projector, estimate_curve, example, thresholds
+from hproj.cli import calibrate_classifier, calibrate_projector, estimate_curve, example, thresholds, intrinsic_dims
 
 load_dotenv()
 
@@ -16,6 +16,7 @@ cli.add_command(calibrate_projector)
 cli.add_command(calibrate_classifier)
 cli.add_command(estimate_curve)
 cli.add_command(thresholds)
+cli.add_command(intrinsic_dims)
 
 def main():
     cli(prog_name="hproj")

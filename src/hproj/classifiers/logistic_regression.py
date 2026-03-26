@@ -8,10 +8,13 @@ from hproj.data.feature_space import FeatureSpace
 
 @ClassifierFactory.register('logistic-regression')
 class LogisticRegressionClassifier(Classifier):
-    def __init__(self, seed, C):
+    def __init__(self, seed, C, max_iter, linesearch_max_iter, tol):
         # self.seed = logistic regression has a convex loss surface so no seed required
         self.scaler = StandardScaler()
         self.C = C
+        self.max_iter = float(max_iter)
+        self.linesearch_max_iter = float(linesearch_max_iter)
+        self.tol = float(tol)
 
     def fit(self, train: FeatureSpace):
         # fit the scalar
@@ -19,7 +22,7 @@ class LogisticRegressionClassifier(Classifier):
         X = self.scaler.transform(train.features)
 
         # fit the logistic regression model
-        self.lg = LogisticRegression(C=self.C)
+        self.lg = LogisticRegression(C=self.C, max_iter=self.max_iter, linesearch_max_iter=self.linesearch_max_iter, tol=self.tol)
         self.lg.fit(X, train.labels)
 
     def predict_proba(self, evaluate: FeatureSpace) -> cp.ndarray:
