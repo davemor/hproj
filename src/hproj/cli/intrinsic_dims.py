@@ -2,10 +2,20 @@ import click
 import numpy as np
 import pandas as pd
 from skdim.id import MLE
+from scipy.spatial.distance import pdist
+
 
 from hproj.data.paths import Paths
 from hproj.util.config import Config
 from hproj.util.logging import setup_logging
+
+
+
+def chavez_id(X):
+    D = pdist(X)
+    mu = np.mean(D)
+    var = np.var(D)
+    return mu**2 / (2 * var)
 
 
 @click.command()
@@ -49,17 +59,21 @@ def intrinsic_dims(run_id: str, force: bool, subsample: int):
             estimator.fit(features_np)
             estimated_dim = float(estimator.dimension_)
 
+            estimated_chavez = float(chavez_id(features_np))
+
             rows.append(
                 {
                     "dataset": dataset,
                     "encoder": encoder,
                     "n_samples": len(features_np),
                     "intrinsic_dim_mle": estimated_dim,
+                    "intrinsic_dim_chavez": estimated_chavez,
                 }
             )
 
             logger.info(
-                f"{dataset}/{encoder}: intrinsic_dim_mle={estimated_dim:.4f}, n_samples={len(features_np)}"
+                f"{dataset}/{encoder}: intrinsic_dim_mle={estimated_dim:.4f}, "
+                f"intrinsic_dim_chavez={estimated_chavez:.4f}, n_samples={len(features_np)}"
             )
 
     pd.DataFrame(rows).to_csv(output_path, index=False)
