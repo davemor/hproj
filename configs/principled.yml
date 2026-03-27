@@ -23,84 +23,88 @@ seeds:
 num_folds: 5
 
 calibration:
-  select: mean-knn-score-mean
-  subsample: 10000
-  dimensions: [1,2,4,8,16,32,128,256,512,1024]
-  measurements:
-    - name: mean-knn-score
-      params:
-        ks: [5,15,30]
-  projectors:
-    - name: pca
-      params:
-        {}
-    - name: grp
-      params:
-        {}
-    - name: umap
-      params:
-        # https://arxiv.org/html/2407.17876v1
-        n_neighbors: [2, 5, 10, 20, 50, 100, 200]
-        min_dist: [0.0, 0.1, 0.25, 0.5, 0.8, 0.99]
-        metric: [cosine]  # these are image embeddings
+  projector:
+    select: mean-knn-score-mean
+    subsample: 50000
+    dimensions: [1, 2, 4, 8, 16, 32, 128, 256, 512, 1024]
+    measurements:
+      - name: mean-knn-score
+        params:
+          ks: [5, 15, 30]
+    projectors:
+      - name: pca
+        params: {}
+      - name: grp
+        params: {}
+      - name: umap
+        params:
+          # https://arxiv.org/html/2407.17876v1
+          n_neighbors: [2, 5, 10, 20, 50, 100, 200]
+          min_dist: [0.0, 0.1, 0.25, 0.5, 0.8, 0.99]
+          metric: [cosine]  # these are image embeddings
+
   classifier:
-    select: 'accuracy'
-    subsample: 10000
-    dimensions: [2,8]
+    select: accuracy
+    subsample: 50000
+    dimensions: [2, 8]
     classifiers:
       - name: logistic-regression
         params:
           C: [0.01, 0.1, 1, 10, 100]
+          max_iter: [2000]
+          linesearch_max_iter: [300]
+          tol: [1.0e-5]
+
 
 curve:
   dimension_intervals:
     - start: 1
-      stop: 32
+      stop: 50
       step: 1
     - start: 32
       stop: 1024
       step: 50
   include_full_dimension: false
-  subsample: 1000
+  subsample: 50000
   projectors: ['pca', 'umap', 'grp']
   classifiers: ['logistic-regression']
   measurements:
     - name: mean-knn-score
       params:
-        ks: [5,30]
+        ks: [5, 30]
     - name: silhouette-score
-      params:
-        {}
+      params: {}
     - name: trustworthiness
 
 thresholds:
   metrics: ['accuracy', 'roc_auc']
   conditions: [0.99, 0.95]
 
+intrinsic_dims:
+  subsample: 10000
+
+report:
+  detail_dims: 50
 
 generalisation:
   measurements:
-        - name: mean-knn-score
-          params:
-            ks: [5,30]
-        - name: silhouette-score
-          params:
-            {}
-        - name: trustworthiness
-          params:
-            {}
-      projectors:
-        - name: pca
-          params:
-            {}
-        - name: grp
-          params:
-            {}
-        - name: umap
-          params:
-            n_neighbors: [2, 5, 10, 20, 50, 100, 200]
-            min_dist: [0.0, 0.1, 0.25, 0.5, 0.8, 0.99]
-            metric: [cosine]
+    - name: mean-knn-score
+      params:
+        ks: [5, 30]
+    - name: silhouette-score
+      params: {}
+    - name: trustworthiness
+      params: {}
+  projectors:
+    - name: pca
+      params: {}
+    - name: grp
+      params: {}
+    - name: umap
+      params:
+        n_neighbors: [2, 5, 10, 20, 50, 100, 200]
+        min_dist: [0.0, 0.1, 0.25, 0.5, 0.8, 0.99]
+        metric: [cosine]
   classifiers:
     - name: logistic-regression
       params:
@@ -122,11 +126,11 @@ generalisation:
       params:
         # based on https://barancezayirli.com/blog/ai/a-comprehensive-guide-to-hyperparameter-tuning-in-xgboost
         n_estimators: [50, 100, 200]    
-        learning_rate: [0.01, 0.3]      # LogUniform(0.005, 0.3)
-        max_depth: [3, 10]              # Integer(3, 10)
-        min_child_weight: [1, 8]        # Integer(1, 8)
-        subsample: [0.6, 1.0]           # Uniform(0.6, 1.0)
-        colsample_bytree: [0.6, 1.0]    # Uniform(0.6, 1.0)
-        gamma: [0, 0.5]                 # Uniform(0, 0.5)
-        reg_lambda: [0.001, 10.0]       # LogUniform(1e-3, 10.0)
-        reg_alpha: [0.001, 10.0] 
+        learning_rate: [0.01, 0.3]
+        max_depth: [3, 10]
+        min_child_weight: [1, 8]
+        subsample: [0.6, 1.0]
+        colsample_bytree: [0.6, 1.0]
+        gamma: [0, 0.5]
+        reg_lambda: [0.001, 10.0]
+        reg_alpha: [0.001, 10.0]

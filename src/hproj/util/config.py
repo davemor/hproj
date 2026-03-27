@@ -192,6 +192,15 @@ class IntrinsicDimsConfig:
 
 
 @dataclass
+class ReportConfig:
+    detail_dims: int = 50
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "ReportConfig":
+        return cls(**data)
+
+
+@dataclass
 class GeneralisationConfig:
     projectors: list[ProjectorConfig] = field(default_factory=list)
     classifiers: list[ClassifierConfig] = field(default_factory=list)
@@ -229,6 +238,7 @@ class Config:
     curve: CurveConfig = field(default_factory=CurveConfig)
     thresholds: ThresholdsConfig = field(default_factory=ThresholdsConfig)
     intrinsic_dims: IntrinsicDimsConfig = field(default_factory=IntrinsicDimsConfig)
+    report: ReportConfig = field(default_factory=ReportConfig)
     generalisation: GeneralisationConfig = field(default_factory=GeneralisationConfig)
 
     @classmethod
@@ -249,6 +259,9 @@ class Config:
 
         if "intrinsic_dims" in data:
             data["intrinsic_dims"] = IntrinsicDimsConfig.from_dict(data["intrinsic_dims"])
+
+        if "report" in data:
+            data["report"] = ReportConfig.from_dict(data["report"])
 
         if "generalisation" in data:
             data["generalisation"] = GeneralisationConfig.from_dict(data["generalisation"])

@@ -1,23 +1,25 @@
 datasets:
   - kather100k
+  - spider-colorectal
 
 encoders:
   - uni2
+  - dinov2
 
 seeds: 
   calibration: 
     projector: [0]
     classifier: [1]
-  curve: [2]
-  evaluation: [3]
+  curve: [2, 3]
+  evaluation: [4]
 
 num_folds: 2
 
 calibration:
   projector:
     select: mean-knn-score-mean
-    subsample: 500
-    dimensions: [2, 3]
+    subsample: 10000
+    dimensions: [2, 4, 8]
     measurements:
       - name: mean-knn-score
         params:
@@ -27,11 +29,16 @@ calibration:
         params: {}
       - name: grp
         params: {}
+      - name: umap
+        params:
+          n_neighbors: [5, 20]
+          min_dist: [0.1, 0.5]
+          metric: [cosine]
 
   classifier:
     select: accuracy
-    subsample: 500
-    dimensions: [2, 3]
+    subsample: 10000
+    dimensions: [2, 4]
     classifiers:
       - name: logistic-regression
         params:
@@ -43,12 +50,12 @@ curve:
     - start: 1
       stop: 50
       step: 1
-    - start: 32
+    - start: 50
       stop: 1024
-      step: 16
+      step: 32
   include_full_dimension: false
   subsample: 10000
-  projectors: ['pca']
+  projectors: ['pca', 'umap', 'grp']
   classifiers: ['logistic-regression']
   measurements:
     - name: mean-knn-score
@@ -56,16 +63,30 @@ curve:
         ks: [5]
 
 thresholds:
-  metrics: ['accuracy']
-  conditions: [0.95]
+  metrics: ['accuracy', 'roc_auc']
+  conditions: [0.99, 0.95]
 
 intrinsic_dims:
-  subsample: 500
+  subsample: 5000
+
+report:
+  detail_dims: 50
 
 generalisation:
+  measurements:
+    - name: mean-knn-score
+      params:
+        ks: [5]
   projectors:
     - name: pca
       params: {}
+    - name: grp
+      params: {}
+    - name: umap
+      params:
+        n_neighbors: [5, 20]
+        min_dist: [0.1, 0.5]
+        metric: [cosine]
   classifiers:
     - name: logistic-regression
       params:

@@ -19,6 +19,7 @@ from hproj.util.dask import make_dask_client
 from hproj.util.hyperparams import make_param_grid
 from hproj.util.logging import setup_logging
 from hproj.util.seeds import make_seed
+from hproj.util.timing import append_stage_time
 
 
 def evaluate_generalisation_task(
@@ -282,6 +283,7 @@ def generalise(run_id: str, force: bool):
 
         elapsed = perf_counter() - start_time
         logger.info(f"Total time: {elapsed:.2f} seconds")
+        append_stage_time(paths.run(run_id).root, "generalisation", elapsed)
 
     finally:
         client.close()

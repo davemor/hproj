@@ -20,6 +20,7 @@ from hproj.util.dask import make_dask_client
 from hproj.util.hyperparams import make_param_grid
 from hproj.util.logging import setup_logging
 from hproj.util.seeds import make_seed
+from hproj.util.timing import append_stage_time
 
 METRICS = ["accuracy", "roc_auc"]
 
@@ -390,6 +391,7 @@ def calibrate_classifier(run_id: str, force: bool):
         elapsed_time = perf_counter() - start_time
         logger.info(f"Total time: {elapsed_time:.2f} seconds")
         logger.info(f"Run output saved to: {paths.run(run_id).root}")
+        append_stage_time(paths.run(run_id).root, "calibrate_classifier", elapsed_time)
 
     finally:
         client.close()

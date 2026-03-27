@@ -25,6 +25,7 @@ from hproj.util.config import ClassifierConfig, Config, ProjectorConfig
 from hproj.util.dask import make_dask_client
 from hproj.util.logging import setup_logging
 from hproj.util.seeds import make_seed
+from hproj.util.timing import append_stage_time
 
 
 @dataclass
@@ -462,6 +463,7 @@ def estimate_curve(run_id: str, force: bool):
         elapsed_time = perf_counter() - start_time
         logger.info(f"Total time: {elapsed_time:.2f} seconds")
         logger.info(f"Run output saved to: {run_paths.root}")
+        append_stage_time(run_paths.root, "estimate_curve", elapsed_time)
 
     finally:
         client.close()

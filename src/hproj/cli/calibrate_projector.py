@@ -22,6 +22,7 @@ from hproj.util.hyperparams import make_param_grid
 from hproj.util.logging import setup_logging
 from hproj.util.runs import generate_run_id
 from hproj.util.seeds import make_seed
+from hproj.util.timing import append_stage_time
 
 
 def score_projector_config(
@@ -338,6 +339,7 @@ def calibrate_projector(config: Path, run_id: str, force: bool):
         elapsed_time = perf_counter() - start_time
         logger.info(f"Total time: {elapsed_time:.2f} seconds")
         logger.info(f"Run output saved to: {run_path.root}")
+        append_stage_time(run_path.root, "calibrate_projector", elapsed_time)
 
     finally:
         client.close()

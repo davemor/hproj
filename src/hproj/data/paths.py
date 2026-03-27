@@ -1,3 +1,4 @@
+import json
 import os
 from dataclasses import dataclass
 from pathlib import Path
@@ -60,6 +61,10 @@ class EmbeddingsPath:
         from hproj.data.feature_space import get_train_test
 
         return get_train_test(self)
+    
+    def load_label_map(self) -> dict[int, str]:
+        with self.label_map().open() as f:
+            return json.load(f)
 
 
 @dataclass
@@ -121,6 +126,20 @@ class RunPath(OutputPath):
 
     def intrinsic_dims(self) -> Path:
         return self.root / "intrinsic_dims.csv"
+
+    def report(self) -> "ReportPaths":
+        return ReportPaths(self.root / "report")
+
+
+@dataclass
+class ReportPaths(OutputPath):
+    root: Path
+
+    def plot(self, classifier: str, metric: str) -> Path:
+        return self.root / "plots" / f"{classifier}_{metric}.pdf"
+
+    def plots_dir(self) -> Path:
+        return self.root / "plots"
 
 
 @dataclass
