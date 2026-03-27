@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#SBATCH --job-name=hproj-calibration
+#SBATCH --job-name=hproj
 #SBATCH --partition=gpu.L40S
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
