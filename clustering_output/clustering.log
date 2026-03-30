@@ -32,3 +32,173 @@
 2026-03-28 15:13:07,242 INFO kmeans uni/spider-thorax 9: k=12 sil=0.5154 ari=0.6002 ami=0.7344
 2026-03-28 15:15:40,951 INFO kmeans uni2/kather100k full: k=9 sil=0.3460 ari=0.8454 ami=0.8791
 2026-03-28 15:15:52,597 INFO kmeans uni2/kather100k 9: k=12 sil=0.4860 ari=0.7274 ami=0.7880
+2026-03-28 15:17:04,497 INFO kmeans uni2/spider-colorectal full: k=10 sil=0.1892 ari=0.6427 ami=0.7909
+2026-03-28 15:17:09,918 INFO kmeans uni2/spider-colorectal 9: k=10 sil=0.6156 ari=0.6034 ami=0.7424
+2026-03-28 15:19:04,374 INFO kmeans uni2/spider-breast full: k=9 sil=0.1635 ari=0.4670 ami=0.6986
+2026-03-28 15:19:11,573 INFO kmeans uni2/spider-breast 9: k=11 sil=0.4292 ari=0.4485 ami=0.6312
+2026-03-28 15:23:41,117 INFO kmeans uni2/spider-skin full: k=12 sil=0.1579 ari=0.3324 ami=0.6724
+2026-03-28 15:24:02,144 INFO kmeans uni2/spider-skin 9: k=9 sil=0.3803 ari=0.2262 ami=0.5735
+2026-03-28 15:25:25,347 INFO kmeans uni2/spider-thorax full: k=12 sil=0.2615 ari=0.6374 ami=0.7789
+2026-03-28 15:25:29,759 INFO kmeans uni2/spider-thorax 9: k=11 sil=0.5297 ari=0.5531 ami=0.6963
+2026-03-28 15:27:12,188 INFO kmeans hibou/kather100k full: k=10 sil=0.1624 ari=0.1370 ami=0.4188
+2026-03-28 15:27:24,081 INFO kmeans hibou/kather100k 9: k=12 sil=0.2993 ari=0.1890 ami=0.4636
+2026-03-28 15:28:14,984 INFO kmeans hibou/spider-colorectal full: k=12 sil=0.2127 ari=0.7043 ami=0.7997
+2026-03-28 15:28:20,772 INFO kmeans hibou/spider-colorectal 9: k=11 sil=0.5014 ari=0.4784 ami=0.6765
+2026-03-28 15:29:39,109 INFO kmeans hibou/spider-breast full: k=12 sil=0.1602 ari=0.4164 ami=0.6551
+2026-03-28 15:29:46,365 INFO kmeans hibou/spider-breast 9: k=10 sil=0.2799 ari=0.2325 ami=0.4569
+2026-03-28 15:32:44,824 INFO kmeans hibou/spider-skin full: k=12 sil=0.1592 ari=0.4111 ami=0.6994
+2026-03-28 15:33:05,897 INFO kmeans hibou/spider-skin 9: k=10 sil=0.2513 ari=0.1700 ami=0.5503
+2026-03-28 15:33:56,258 INFO kmeans hibou/spider-thorax full: k=12 sil=0.3159 ari=0.6454 ami=0.7945
+2026-03-28 15:34:00,600 INFO kmeans hibou/spider-thorax 9: k=12 sil=0.5502 ari=0.5552 ami=0.7126
+2026-03-28 15:36:02,672 INFO kmeans dinov2/kather100k full: k=2 sil=0.3037 ari=0.1764 ami=0.3784
+2026-03-28 15:36:14,706 INFO kmeans dinov2/kather100k 9: k=10 sil=0.4176 ari=0.4598 ami=0.6199
+2026-03-28 15:37:23,858 INFO kmeans dinov2/spider-colorectal full: k=4 sil=0.1799 ari=0.1676 ami=0.3900
+2026-03-28 15:37:30,176 INFO kmeans dinov2/spider-colorectal 9: k=9 sil=0.2918 ari=0.2254 ami=0.4281
+2026-03-28 15:39:04,388 INFO kmeans dinov2/spider-breast full: k=2 sil=0.1961 ari=0.0207 ami=0.1545
+2026-03-28 15:39:12,183 INFO kmeans dinov2/spider-breast 9: k=11 sil=0.2373 ari=0.1429 ami=0.3274
+2026-03-28 15:42:46,065 INFO kmeans dinov2/spider-skin full: k=2 sil=0.1351 ari=0.0118 ami=0.1124
+2026-03-28 15:43:08,507 INFO kmeans dinov2/spider-skin 9: k=9 sil=0.2256 ari=0.1372 ami=0.3619
+2026-03-28 15:44:08,320 INFO kmeans dinov2/spider-thorax full: k=2 sil=0.2043 ari=0.0453 ami=0.1295
+2026-03-28 15:44:14,430 INFO kmeans dinov2/spider-thorax 9: k=11 sil=0.2591 ari=0.2554 ami=0.3756
+2026-03-28 15:50:38,352 INFO hdbscan uni/kather100k full: mcs=10 ms=None k_tr=170 k_te=9 sil=0.3898 ari=0.0020 ami=0.1323
+2026-03-28 15:56:15,713 INFO hdbscan uni/kather100k 9: mcs=30 ms=10 k_tr=22 k_te=13 sil=0.6056 ari=0.1170 ami=0.4491
+2026-03-28 16:00:15,301 INFO hdbscan uni/spider-colorectal full: mcs=10 ms=10 k_tr=2 k_te=1 sil=nan ari=0.0005 ami=0.0181
+2026-03-28 16:01:24,560 INFO hdbscan uni/spider-colorectal 9: mcs=30 ms=20 k_tr=9 k_te=9 sil=0.6292 ari=0.1865 ami=0.5477
+2026-03-28 16:07:00,214 INFO hdbscan uni/spider-breast full: mcs=30 ms=None k_tr=2 k_te=2 sil=0.0890 ari=0.0018 ami=0.0227
+2026-03-28 16:07:54,182 INFO hdbscan uni/spider-breast 9: mcs=10 ms=None k_tr=48 k_te=21 sil=0.4943 ari=0.0330 ami=0.2823
+2026-03-28 16:13:30,979 INFO hdbscan uni/spider-skin full: mcs=10 ms=None k_tr=118 k_te=42 sil=0.3108 ari=0.0564 ami=0.4597
+2026-03-28 16:17:01,715 INFO hdbscan uni/spider-skin 9: mcs=10 ms=None k_tr=38 k_te=27 sil=0.4480 ari=0.0873 ami=0.4915
+2026-03-28 16:19:34,296 INFO hdbscan uni/spider-thorax full: mcs=30 ms=20 k_tr=32 k_te=14 sil=0.2152 ari=0.1748 ami=0.5468
+2026-03-28 16:20:43,686 INFO hdbscan uni/spider-thorax 9: mcs=30 ms=None k_tr=21 k_te=17 sil=0.5688 ari=0.1764 ami=0.5593
+2026-03-28 16:30:00,693 INFO hdbscan uni2/kather100k full: mcs=10 ms=None k_tr=173 k_te=11 sil=0.3164 ari=0.0837 ami=0.3590
+2026-03-28 16:34:05,747 INFO hdbscan uni2/kather100k 9: mcs=30 ms=None k_tr=33 k_te=10 sil=0.8203 ari=0.0465 ami=0.3478
+2026-03-28 16:37:53,507 INFO hdbscan uni2/spider-colorectal full: mcs=10 ms=20 k_tr=2 k_te=2 sil=0.0513 ari=0.0064 ami=0.0533
+2026-03-28 16:39:23,862 INFO hdbscan uni2/spider-colorectal 9: mcs=30 ms=None k_tr=10 k_te=10 sil=0.6711 ari=0.2363 ami=0.5869
+2026-03-28 16:44:15,208 INFO hdbscan uni2/spider-breast full: mcs=10 ms=None k_tr=159 k_te=36 sil=0.2541 ari=0.0243 ami=0.3387
+2026-03-28 16:45:06,735 INFO hdbscan uni2/spider-breast 9: mcs=10 ms=None k_tr=72 k_te=38 sil=0.5734 ari=0.0295 ami=0.2732
+2026-03-28 16:52:21,380 INFO hdbscan uni2/spider-skin full: mcs=10 ms=None k_tr=131 k_te=44 sil=0.2401 ari=0.0443 ami=0.4118
+2026-03-28 16:55:06,001 INFO hdbscan uni2/spider-skin 9: mcs=10 ms=None k_tr=52 k_te=36 sil=0.5997 ari=0.0333 ami=0.3590
+2026-03-28 16:57:54,072 INFO hdbscan uni2/spider-thorax full: mcs=30 ms=None k_tr=38 k_te=17 sil=0.3183 ari=0.1375 ami=0.5272
+2026-03-28 16:59:09,719 INFO hdbscan uni2/spider-thorax 9: mcs=30 ms=None k_tr=27 k_te=24 sil=0.6136 ari=0.0920 ami=0.4726
+2026-03-28 17:05:36,353 INFO hdbscan hibou/kather100k full: mcs=30 ms=None k_tr=15 k_te=2 sil=0.4896 ari=0.0799 ami=0.2082
+2026-03-28 17:08:54,360 INFO hdbscan hibou/kather100k 9: mcs=30 ms=None k_tr=18 k_te=8 sil=0.5588 ari=0.1257 ami=0.3649
+2026-03-28 17:12:02,469 INFO hdbscan hibou/spider-colorectal full: mcs=10 ms=None k_tr=2 k_te=2 sil=0.0164 ari=0.0008 ami=0.0328
+2026-03-28 17:12:58,105 INFO hdbscan hibou/spider-colorectal 9: mcs=30 ms=None k_tr=15 k_te=14 sil=0.5507 ari=0.1315 ami=0.4731
+2026-03-28 17:15:31,966 INFO hdbscan hibou/spider-breast full: mcs=10 ms=None k_tr=175 k_te=55 sil=0.2952 ari=0.0463 ami=0.4180
+2026-03-28 17:16:52,801 INFO hdbscan hibou/spider-breast 9: mcs=10 ms=None k_tr=76 k_te=47 sil=0.4427 ari=0.0391 ami=0.3209
+2026-03-28 17:22:47,213 INFO hdbscan hibou/spider-skin full: mcs=10 ms=None k_tr=150 k_te=57 sil=0.3165 ari=0.0496 ami=0.4444
+2026-03-28 17:25:34,745 INFO hdbscan hibou/spider-skin 9: mcs=10 ms=None k_tr=41 k_te=32 sil=0.5434 ari=0.0310 ami=0.3570
+2026-03-28 17:27:46,940 INFO hdbscan hibou/spider-thorax full: mcs=10 ms=None k_tr=139 k_te=45 sil=0.3661 ari=0.1553 ami=0.5572
+2026-03-28 17:29:07,747 INFO hdbscan hibou/spider-thorax 9: mcs=30 ms=20 k_tr=33 k_te=25 sil=0.7031 ari=0.2185 ami=0.6230
+2026-03-28 17:36:31,378 INFO hdbscan dinov2/kather100k full: mcs=30 ms=None k_tr=10 k_te=3 sil=0.6171 ari=0.1513 ami=0.2652
+2026-03-28 17:38:38,762 INFO hdbscan dinov2/kather100k 9: mcs=30 ms=10 k_tr=2 k_te=2 sil=0.2450 ari=0.1118 ami=0.2534
+2026-03-28 17:39:02,672 INFO hdbscan dinov2/spider-colorectal full: mcs=10 ms=None k_tr=4 k_te=3 sil=0.2839 ari=0.0038 ami=0.0488
+2026-03-28 17:39:34,614 INFO hdbscan dinov2/spider-colorectal 9: mcs=30 ms=None k_tr=3 k_te=3 sil=0.2228 ari=0.0499 ami=0.1936
+2026-03-28 17:43:49,854 INFO hdbscan dinov2/spider-breast full: mcs=10 ms=20 k_tr=2 k_te=2 sil=0.6520 ari=0.0191 ami=0.1281
+2026-03-28 17:44:48,344 INFO hdbscan dinov2/spider-breast 9: mcs=10 ms=10 k_tr=2 k_te=2 sil=0.0128 ari=0.0089 ami=0.0357
+2026-03-28 17:58:22,172 INFO hdbscan dinov2/spider-skin full: mcs=30 ms=10 k_tr=2 k_te=1 sil=nan ari=0.0164 ami=0.1101
+2026-03-28 17:59:30,340 INFO hdbscan dinov2/spider-skin 9: mcs=10 ms=None k_tr=13 k_te=9 sil=0.2629 ari=0.0098 ami=0.1285
+2026-03-28 18:00:23,702 INFO hdbscan dinov2/spider-thorax full: mcs=10 ms=20 k_tr=2 k_te=1 sil=nan ari=0.0693 ami=0.1407
+2026-03-28 18:01:30,925 INFO hdbscan dinov2/spider-thorax 9: mcs=30 ms=10 k_tr=2 k_te=2 sil=0.2308 ari=0.0448 ami=0.1592
+2026-03-28 20:39:11,169 INFO Running clustering experiment for run id hproj-2026-03-28_15-02-11-bb2a5203
+2026-03-28 20:39:11,169 INFO Writing outputs to clustering_output
+2026-03-28 20:39:11,170 INFO Loading embeddings for kather100k/uni from /nvme/hdim/embeddings/cache-kather100k-uni
+2026-03-28 20:39:11,910 INFO Loading embeddings for spider-colorectal/uni from /nvme/hdim/embeddings/cache-spider-colorectal-uni
+2026-03-28 20:39:12,263 INFO Loading embeddings for spider-breast/uni from /nvme/hdim/embeddings/cache-spider-breast-uni
+2026-03-28 20:39:12,634 INFO Loading embeddings for spider-skin/uni from /nvme/hdim/embeddings/cache-spider-skin-uni
+2026-03-28 20:39:13,399 INFO Loading embeddings for spider-thorax/uni from /nvme/hdim/embeddings/cache-spider-thorax-uni
+2026-03-28 20:39:13,703 INFO Loading embeddings for kather100k/uni2 from /nvme/hdim/embeddings/cache-kather100k-uni2
+2026-03-28 20:39:14,396 INFO Loading embeddings for spider-colorectal/uni2 from /nvme/hdim/embeddings/cache-spider-colorectal-uni2
+2026-03-28 20:39:14,870 INFO Loading embeddings for spider-breast/uni2 from /nvme/hdim/embeddings/cache-spider-breast-uni2
+2026-03-28 20:39:15,442 INFO Loading embeddings for spider-skin/uni2 from /nvme/hdim/embeddings/cache-spider-skin-uni2
+2026-03-28 20:39:16,410 INFO Loading embeddings for spider-thorax/uni2 from /nvme/hdim/embeddings/cache-spider-thorax-uni2
+2026-03-28 20:39:16,893 INFO Loading embeddings for kather100k/hibou from /nvme/hdim/embeddings/cache-kather100k-hibou
+2026-03-28 20:39:17,325 INFO Loading embeddings for spider-colorectal/hibou from /nvme/hdim/embeddings/cache-spider-colorectal-hibou
+2026-03-28 20:39:17,633 INFO Loading embeddings for spider-breast/hibou from /nvme/hdim/embeddings/cache-spider-breast-hibou
+2026-03-28 20:39:17,995 INFO Loading embeddings for spider-skin/hibou from /nvme/hdim/embeddings/cache-spider-skin-hibou
+2026-03-28 20:39:18,637 INFO Loading embeddings for spider-thorax/hibou from /nvme/hdim/embeddings/cache-spider-thorax-hibou
+2026-03-28 20:39:18,951 INFO Loading embeddings for kather100k/dinov2 from /nvme/hdim/embeddings/cache-kather100k-dinov2
+2026-03-28 20:39:19,384 INFO Loading embeddings for spider-colorectal/dinov2 from /nvme/hdim/embeddings/cache-spider-colorectal-dinov2
+2026-03-28 20:39:19,696 INFO Loading embeddings for spider-breast/dinov2 from /nvme/hdim/embeddings/cache-spider-breast-dinov2
+2026-03-28 20:39:20,070 INFO Loading embeddings for spider-skin/dinov2 from /nvme/hdim/embeddings/cache-spider-skin-dinov2
+2026-03-28 20:39:20,709 INFO Loading embeddings for spider-thorax/dinov2 from /nvme/hdim/embeddings/cache-spider-thorax-dinov2
+2026-03-28 20:41:04,154 INFO kmeans uni/kather100k full: k=10 sil=0.3201 ari=0.9228 ami=0.9075
+2026-03-28 20:41:15,763 INFO kmeans uni/kather100k 9: k=11 sil=0.7176 ari=0.8992 ami=0.8885
+2026-03-28 20:42:03,984 INFO kmeans uni/spider-colorectal full: k=11 sil=0.1872 ari=0.7116 ami=0.8221
+2026-03-28 20:42:09,312 INFO kmeans uni/spider-colorectal 9: k=10 sil=0.6020 ari=0.6343 ami=0.7677
+2026-03-28 20:43:33,184 INFO kmeans uni/spider-breast full: k=12 sil=0.1040 ari=0.5297 ami=0.6928
+2026-03-28 20:43:40,372 INFO kmeans uni/spider-breast 9: k=9 sil=0.4216 ari=0.3896 ami=0.5913
+2026-03-28 20:46:44,486 INFO kmeans uni/spider-skin full: k=12 sil=0.1427 ari=0.3913 ami=0.6826
+2026-03-28 20:47:05,797 INFO kmeans uni/spider-skin 9: k=10 sil=0.3428 ari=0.2664 ami=0.5664
+2026-03-28 20:47:57,169 INFO kmeans uni/spider-thorax full: k=12 sil=0.2447 ari=0.6336 ami=0.8108
+2026-03-28 20:48:01,501 INFO kmeans uni/spider-thorax 9: k=12 sil=0.5155 ari=0.6002 ami=0.7343
+2026-03-28 20:50:34,807 INFO kmeans uni2/kather100k full: k=9 sil=0.3460 ari=0.8454 ami=0.8791
+2026-03-28 20:50:46,380 INFO kmeans uni2/kather100k 9: k=12 sil=0.4860 ari=0.7274 ami=0.7880
+2026-03-28 20:51:57,999 INFO kmeans uni2/spider-colorectal full: k=10 sil=0.1892 ari=0.6427 ami=0.7909
+2026-03-28 20:52:03,377 INFO kmeans uni2/spider-colorectal 9: k=10 sil=0.6156 ari=0.6034 ami=0.7424
+2026-03-28 20:53:57,472 INFO kmeans uni2/spider-breast full: k=9 sil=0.1635 ari=0.4670 ami=0.6986
+2026-03-28 20:54:04,613 INFO kmeans uni2/spider-breast 9: k=11 sil=0.4292 ari=0.4485 ami=0.6312
+2026-03-28 20:58:33,570 INFO kmeans uni2/spider-skin full: k=12 sil=0.1579 ari=0.3324 ami=0.6724
+2026-03-28 20:58:54,453 INFO kmeans uni2/spider-skin 9: k=9 sil=0.3801 ari=0.2261 ami=0.5734
+2026-03-28 21:00:17,305 INFO kmeans uni2/spider-thorax full: k=12 sil=0.2615 ari=0.6374 ami=0.7789
+2026-03-28 21:00:21,681 INFO kmeans uni2/spider-thorax 9: k=11 sil=0.5297 ari=0.5531 ami=0.6963
+2026-03-28 21:02:03,829 INFO kmeans hibou/kather100k full: k=10 sil=0.1624 ari=0.1370 ami=0.4188
+2026-03-28 21:02:15,646 INFO kmeans hibou/kather100k 9: k=12 sil=0.2993 ari=0.1890 ami=0.4636
+2026-03-28 21:03:06,384 INFO kmeans hibou/spider-colorectal full: k=12 sil=0.2127 ari=0.7043 ami=0.7997
+2026-03-28 21:03:12,131 INFO kmeans hibou/spider-colorectal 9: k=11 sil=0.5014 ari=0.4784 ami=0.6765
+2026-03-28 21:04:30,232 INFO kmeans hibou/spider-breast full: k=12 sil=0.1602 ari=0.4164 ami=0.6551
+2026-03-28 21:04:37,433 INFO kmeans hibou/spider-breast 9: k=10 sil=0.2804 ari=0.2327 ami=0.4570
+2026-03-28 21:07:35,477 INFO kmeans hibou/spider-skin full: k=12 sil=0.1592 ari=0.4111 ami=0.6994
+2026-03-28 21:07:56,414 INFO kmeans hibou/spider-skin 9: k=10 sil=0.2513 ari=0.1700 ami=0.5503
+2026-03-28 21:08:46,582 INFO kmeans hibou/spider-thorax full: k=12 sil=0.3159 ari=0.6454 ami=0.7945
+2026-03-28 21:08:50,890 INFO kmeans hibou/spider-thorax 9: k=12 sil=0.5502 ari=0.5552 ami=0.7126
+2026-03-28 21:10:52,529 INFO kmeans dinov2/kather100k full: k=2 sil=0.3037 ari=0.1764 ami=0.3784
+2026-03-28 21:11:04,464 INFO kmeans dinov2/kather100k 9: k=10 sil=0.4176 ari=0.4598 ami=0.6199
+2026-03-28 21:12:13,339 INFO kmeans dinov2/spider-colorectal full: k=4 sil=0.1799 ari=0.1676 ami=0.3900
+2026-03-28 21:12:19,602 INFO kmeans dinov2/spider-colorectal 9: k=9 sil=0.2918 ari=0.2254 ami=0.4281
+2026-03-28 21:13:53,418 INFO kmeans dinov2/spider-breast full: k=2 sil=0.1961 ari=0.0207 ami=0.1545
+2026-03-28 21:14:01,153 INFO kmeans dinov2/spider-breast 9: k=11 sil=0.2373 ari=0.1429 ami=0.3274
+2026-03-28 21:17:34,250 INFO kmeans dinov2/spider-skin full: k=2 sil=0.1351 ari=0.0118 ami=0.1124
+2026-03-28 21:17:56,534 INFO kmeans dinov2/spider-skin 9: k=9 sil=0.2256 ari=0.1372 ami=0.3619
+2026-03-28 21:18:56,124 INFO kmeans dinov2/spider-thorax full: k=2 sil=0.2043 ari=0.0453 ami=0.1295
+2026-03-28 21:19:02,190 INFO kmeans dinov2/spider-thorax 9: k=11 sil=0.2591 ari=0.2555 ami=0.3759
+2026-03-28 21:25:20,554 INFO hdbscan uni/kather100k full: mcs=10 ms=None k_tr=170 k_te=9 sil=0.3898 ari=0.0020 ami=0.1323
+2026-03-28 21:30:30,662 INFO hdbscan uni/kather100k 9: mcs=30 ms=10 k_tr=22 k_te=13 sil=0.6056 ari=0.1170 ami=0.4491
+2026-03-28 21:34:27,668 INFO hdbscan uni/spider-colorectal full: mcs=10 ms=None k_tr=2 k_te=1 sil=nan ari=0.0005 ami=0.0181
+2026-03-28 21:35:35,117 INFO hdbscan uni/spider-colorectal 9: mcs=30 ms=20 k_tr=9 k_te=9 sil=0.6292 ari=0.1865 ami=0.5477
+2026-03-28 21:41:06,549 INFO hdbscan uni/spider-breast full: mcs=30 ms=None k_tr=2 k_te=2 sil=0.0890 ari=0.0018 ami=0.0227
+2026-03-28 21:41:59,778 INFO hdbscan uni/spider-breast 9: mcs=10 ms=None k_tr=48 k_te=21 sil=0.4943 ari=0.0330 ami=0.2823
+2026-03-28 21:47:32,084 INFO hdbscan uni/spider-skin full: mcs=10 ms=None k_tr=118 k_te=42 sil=0.3108 ari=0.0564 ami=0.4597
+2026-03-28 21:50:51,245 INFO hdbscan uni/spider-skin 9: mcs=10 ms=None k_tr=38 k_te=27 sil=0.4480 ari=0.0873 ami=0.4915
+2026-03-28 21:53:20,204 INFO hdbscan uni/spider-thorax full: mcs=30 ms=20 k_tr=32 k_te=14 sil=0.2152 ari=0.1748 ami=0.5468
+2026-03-28 21:54:28,031 INFO hdbscan uni/spider-thorax 9: mcs=30 ms=None k_tr=21 k_te=17 sil=0.5688 ari=0.1764 ami=0.5593
+2026-03-28 22:03:15,005 INFO hdbscan uni2/kather100k full: mcs=10 ms=None k_tr=173 k_te=11 sil=0.3164 ari=0.0837 ami=0.3590
+2026-03-28 22:07:03,640 INFO hdbscan uni2/kather100k 9: mcs=30 ms=None k_tr=35 k_te=11 sil=0.7872 ari=0.0379 ami=0.3121
+2026-03-28 22:10:47,330 INFO hdbscan uni2/spider-colorectal full: mcs=10 ms=20 k_tr=2 k_te=2 sil=0.0513 ari=0.0064 ami=0.0533
+2026-03-28 22:12:15,293 INFO hdbscan uni2/spider-colorectal 9: mcs=30 ms=None k_tr=10 k_te=10 sil=0.6711 ari=0.2363 ami=0.5869
+2026-03-28 22:17:00,414 INFO hdbscan uni2/spider-breast full: mcs=10 ms=None k_tr=159 k_te=36 sil=0.2541 ari=0.0243 ami=0.3387
+2026-03-28 22:17:50,540 INFO hdbscan uni2/spider-breast 9: mcs=10 ms=None k_tr=72 k_te=38 sil=0.5734 ari=0.0295 ami=0.2732
+2026-03-28 22:24:56,099 INFO hdbscan uni2/spider-skin full: mcs=10 ms=None k_tr=131 k_te=44 sil=0.2401 ari=0.0443 ami=0.4118
+2026-03-28 22:27:36,882 INFO hdbscan uni2/spider-skin 9: mcs=10 ms=None k_tr=51 k_te=36 sil=0.5997 ari=0.0333 ami=0.3590
+2026-03-28 22:30:21,413 INFO hdbscan uni2/spider-thorax full: mcs=30 ms=None k_tr=38 k_te=17 sil=0.3183 ari=0.1375 ami=0.5272
+2026-03-28 22:31:35,868 INFO hdbscan uni2/spider-thorax 9: mcs=30 ms=None k_tr=27 k_te=24 sil=0.6148 ari=0.0921 ami=0.4726
+2026-03-28 22:38:00,039 INFO hdbscan hibou/kather100k full: mcs=30 ms=None k_tr=15 k_te=2 sil=0.4896 ari=0.0799 ami=0.2082
+2026-03-28 22:41:08,517 INFO hdbscan hibou/kather100k 9: mcs=30 ms=None k_tr=18 k_te=8 sil=0.5588 ari=0.1257 ami=0.3649
+2026-03-28 22:44:14,906 INFO hdbscan hibou/spider-colorectal full: mcs=10 ms=None k_tr=2 k_te=2 sil=0.0164 ari=0.0008 ami=0.0328
+2026-03-28 22:45:09,597 INFO hdbscan hibou/spider-colorectal 9: mcs=30 ms=None k_tr=15 k_te=14 sil=0.5507 ari=0.1315 ami=0.4731
+2026-03-28 22:47:41,093 INFO hdbscan hibou/spider-breast full: mcs=10 ms=None k_tr=175 k_te=55 sil=0.2952 ari=0.0463 ami=0.4180
+2026-03-28 22:49:00,002 INFO hdbscan hibou/spider-breast 9: mcs=10 ms=None k_tr=76 k_te=47 sil=0.4427 ari=0.0391 ami=0.3209
+2026-03-28 22:54:51,451 INFO hdbscan hibou/spider-skin full: mcs=10 ms=None k_tr=150 k_te=57 sil=0.3165 ari=0.0496 ami=0.4444
+2026-03-28 22:57:33,069 INFO hdbscan hibou/spider-skin 9: mcs=10 ms=None k_tr=41 k_te=32 sil=0.5435 ari=0.0309 ami=0.3566
+2026-03-28 22:59:43,031 INFO hdbscan hibou/spider-thorax full: mcs=10 ms=None k_tr=139 k_te=45 sil=0.3661 ari=0.1553 ami=0.5572
+2026-03-28 23:01:06,343 INFO hdbscan hibou/spider-thorax 9: mcs=30 ms=20 k_tr=33 k_te=25 sil=0.7031 ari=0.2186 ami=0.6231
+2026-03-28 23:08:28,478 INFO hdbscan dinov2/kather100k full: mcs=30 ms=None k_tr=10 k_te=3 sil=0.6171 ari=0.1513 ami=0.2652
+2026-03-28 23:10:26,761 INFO hdbscan dinov2/kather100k 9: mcs=30 ms=10 k_tr=2 k_te=2 sil=0.2450 ari=0.1118 ami=0.2534
+2026-03-28 23:10:50,637 INFO hdbscan dinov2/spider-colorectal full: mcs=10 ms=None k_tr=4 k_te=3 sil=0.2839 ari=0.0038 ami=0.0488
+2026-03-28 23:11:21,718 INFO hdbscan dinov2/spider-colorectal 9: mcs=30 ms=None k_tr=3 k_te=3 sil=0.2228 ari=0.0499 ami=0.1936
+2026-03-28 23:15:36,004 INFO hdbscan dinov2/spider-breast full: mcs=10 ms=20 k_tr=2 k_te=2 sil=0.6520 ari=0.0191 ami=0.1281
+2026-03-28 23:16:32,115 INFO hdbscan dinov2/spider-breast 9: mcs=10 ms=None k_tr=2 k_te=2 sil=0.0128 ari=0.0089 ami=0.0357
+2026-03-28 23:30:01,920 INFO hdbscan dinov2/spider-skin full: mcs=30 ms=10 k_tr=2 k_te=1 sil=nan ari=0.0164 ami=0.1101
+2026-03-28 23:31:08,716 INFO hdbscan dinov2/spider-skin 9: mcs=10 ms=None k_tr=13 k_te=9 sil=0.2629 ari=0.0098 ami=0.1285
+2026-03-28 23:32:01,514 INFO hdbscan dinov2/spider-thorax full: mcs=10 ms=20 k_tr=2 k_te=1 sil=nan ari=0.0693 ami=0.1407
+2026-03-28 23:33:07,246 INFO hdbscan dinov2/spider-thorax 9: mcs=30 ms=10 k_tr=2 k_te=2 sil=0.2308 ari=0.0448 ami=0.1592

@@ -1,0 +1,29 @@
+2026-03-30 10:42:19,279 INFO Running clustering experiment for run id hproj-2026-03-28_15-02-11-bb2a5203
+2026-03-30 10:42:19,279 INFO Writing outputs to clustering_output2
+2026-03-30 10:42:19,279 INFO Loading embeddings for kather100k/uni from /nvme/hdim/embeddings/cache-kather100k-uni
+2026-03-30 10:42:34,434 INFO Running clustering experiment for run id hproj-2026-03-28_15-02-11-bb2a5203
+2026-03-30 10:42:34,434 INFO Writing outputs to clustering_output2
+2026-03-30 10:42:34,434 INFO Loading embeddings for kather100k/uni from /nvme/hdim/embeddings/cache-kather100k-uni
+2026-03-30 10:42:34,725 INFO Loading embeddings for spider-colorectal/uni from /nvme/hdim/embeddings/cache-spider-colorectal-uni
+2026-03-30 10:42:35,114 INFO Loading embeddings for spider-breast/uni from /nvme/hdim/embeddings/cache-spider-breast-uni
+2026-03-30 10:42:35,484 INFO Loading embeddings for spider-skin/uni from /nvme/hdim/embeddings/cache-spider-skin-uni
+2026-03-30 10:42:36,264 INFO Loading embeddings for spider-thorax/uni from /nvme/hdim/embeddings/cache-spider-thorax-uni
+2026-03-30 10:42:36,572 INFO Loading embeddings for kather100k/uni2 from /nvme/hdim/embeddings/cache-kather100k-uni2
+2026-03-30 10:42:37,238 INFO Loading embeddings for spider-colorectal/uni2 from /nvme/hdim/embeddings/cache-spider-colorectal-uni2
+2026-03-30 10:42:37,707 INFO Loading embeddings for spider-breast/uni2 from /nvme/hdim/embeddings/cache-spider-breast-uni2
+2026-03-30 10:42:38,265 INFO Loading embeddings for spider-skin/uni2 from /nvme/hdim/embeddings/cache-spider-skin-uni2
+2026-03-30 10:42:39,230 INFO Loading embeddings for spider-thorax/uni2 from /nvme/hdim/embeddings/cache-spider-thorax-uni2
+2026-03-30 10:42:39,716 INFO Loading embeddings for kather100k/hibou from /nvme/hdim/embeddings/cache-kather100k-hibou
+2026-03-30 10:42:40,149 INFO Loading embeddings for spider-colorectal/hibou from /nvme/hdim/embeddings/cache-spider-colorectal-hibou
+2026-03-30 10:42:40,459 INFO Loading embeddings for spider-breast/hibou from /nvme/hdim/embeddings/cache-spider-breast-hibou
+2026-03-30 10:42:40,824 INFO Loading embeddings for spider-skin/hibou from /nvme/hdim/embeddings/cache-spider-skin-hibou
+2026-03-30 10:42:41,461 INFO Loading embeddings for spider-thorax/hibou from /nvme/hdim/embeddings/cache-spider-thorax-hibou
+2026-03-30 10:42:41,774 INFO Loading embeddings for kather100k/dinov2 from /nvme/hdim/embeddings/cache-kather100k-dinov2
+2026-03-30 10:42:42,208 INFO Loading embeddings for spider-colorectal/dinov2 from /nvme/hdim/embeddings/cache-spider-colorectal-dinov2
+2026-03-30 10:42:42,519 INFO Loading embeddings for spider-breast/dinov2 from /nvme/hdim/embeddings/cache-spider-breast-dinov2
+2026-03-30 10:42:42,887 INFO Loading embeddings for spider-skin/dinov2 from /nvme/hdim/embeddings/cache-spider-skin-dinov2
+2026-03-30 10:42:43,526 INFO Loading embeddings for spider-thorax/dinov2 from /nvme/hdim/embeddings/cache-spider-thorax-dinov2
+2026-03-30 10:44:25,696 INFO kmeans uni/kather100k full: k=10 sil=0.3201 ari=0.9228 ami=0.9075
+2026-03-30 10:44:37,313 INFO kmeans uni/kather100k 9: k=11 sil=0.7176 ari=0.8992 ami=0.8885
+2026-03-30 10:45:25,636 INFO kmeans uni/spider-colorectal full: k=11 sil=0.1872 ari=0.7116 ami=0.8221
+2026-03-30 10:45:30,993 INFO kmeans uni/spider-colorectal 9: k=10 sil=0.6020 ari=0.6343 ami=0.7677
