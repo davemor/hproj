@@ -27,3 +27,5 @@
 2026-03-30 10:44:37,313 INFO kmeans uni/kather100k 9: k=11 sil=0.7176 ari=0.8992 ami=0.8885
 2026-03-30 10:45:25,636 INFO kmeans uni/spider-colorectal full: k=11 sil=0.1872 ari=0.7116 ami=0.8221
 2026-03-30 10:45:30,993 INFO kmeans uni/spider-colorectal 9: k=10 sil=0.6020 ari=0.6343 ami=0.7677
+2026-03-30 10:46:55,078 INFO kmeans uni/spider-breast full: k=12 sil=0.1040 ari=0.5297 ami=0.6928
+2026-03-30 10:47:02,310 INFO kmeans uni/spider-breast 9: k=9 sil=0.4216 ari=0.3896 ami=0.5913
