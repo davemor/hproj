@@ -14,4 +14,3 @@ run_dgx:
 		-v "$(PWD)":/hproj \
 		-w /hproj \
 		hproj:latest
-`
